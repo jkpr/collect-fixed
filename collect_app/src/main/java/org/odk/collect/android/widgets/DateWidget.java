@@ -27,6 +27,7 @@ import org.odk.collect.android.application.Collect;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -34,6 +35,7 @@ import android.widget.CalendarView;
 import android.widget.DatePicker;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 
 /**
  * Displays a DatePicker widget. DateWidget handles leap years and does not allow dates that do not
@@ -167,30 +169,47 @@ public class DateWidget extends QuestionWidget {
 
         if ( hideMonth || hideDay ) {
 		    for (Field datePickerDialogField : this.mDatePicker.getClass().getDeclaredFields()) {
-		        if ("mDayPicker".equals(datePickerDialogField.getName()) ||
-		                "mDaySpinner".equals(datePickerDialogField.getName())) {
-		            datePickerDialogField.setAccessible(true);
-		            Object dayPicker = new Object();
-		            try {
-		                dayPicker = datePickerDialogField.get(this.mDatePicker);
-		            } catch (Exception e) {
-		                e.printStackTrace();
-		            }
-		            ((View) dayPicker).setVisibility(View.GONE);
-		        }
-		        if ( hideMonth ) {
-			        if ("mMonthPicker".equals(datePickerDialogField.getName()) ||
-			                "mMonthSpinner".equals(datePickerDialogField.getName())) {
-			            datePickerDialogField.setAccessible(true);
-			            Object monthPicker = new Object();
-			            try {
-			            	monthPicker = datePickerDialogField.get(this.mDatePicker);
-			            } catch (Exception e) {
-			                e.printStackTrace();
-			            }
-			            ((View) monthPicker).setVisibility(View.GONE);
-			        }
-		        }
+                // test
+                Log.v("DateWidget", "Class member name: " + datePickerDialogField.getName());
+                if ("mDelegate".equals(datePickerDialogField.getName())) {
+                    datePickerDialogField.setAccessible(true);
+                    try {
+                        Object delegate = datePickerDialogField.get(this.mDatePicker);
+                        for (Field dpdf : delegate.getClass().getDeclaredFields()) {
+                            Log.v("DateWidget2", "Class member name: " + dpdf.getName());
+                            if ("mDayPicker".equals(dpdf.getName()) ||
+                                    "mDaySpinner".equals(dpdf.getName())) {
+                                dpdf.setAccessible(true);
+                                try {
+                                    Class<?> c = Class.forName("android.widget.DatePicker$DatePickerSpinnerDelegate");
+                                    Object dayPicker = dpdf.get(c);
+                                    ((View) dayPicker).setVisibility(View.GONE);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                            if ( hideMonth ) {
+                                if ("mMonthPicker".equals(dpdf.getName()) ||
+                                        "mMonthSpinner".equals(dpdf.getName())) {
+                                    dpdf.setAccessible(true);
+
+                                    try {
+                                        Class<?> c = Class.forName("android.widget.DatePicker$DatePickerSpinnerDelegate");
+                                        Object monthPicker = dpdf.get(c);
+                                        ((View) monthPicker).setVisibility(View.GONE);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                // end test
 		    }
         }
     }
