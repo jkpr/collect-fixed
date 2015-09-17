@@ -2,9 +2,8 @@
  GRADLE CONFIG
  *************************************************************************************************/
 
-if ((new File(gradle.local)).exists()) { // TODO: This is very strange
-    def localPath = '../' + gradle.local // Shouldn't need to append ../ not consistent
-    apply from: localPath
+if ((new File(gradle.local)).exists()) {
+    apply from: gradle.local
 } else {
     apply from: gradle.remote
 }
@@ -24,8 +23,8 @@ android {
         applicationId("org.odk.collect.android")
         minSdkVersion(8)
         targetSdkVersion(8)
-        versionCode(1051)
-        versionName("1.4.6")
+        versionCode(1054)
+        versionName("1.4.7")
     }
 
     buildTypes {
