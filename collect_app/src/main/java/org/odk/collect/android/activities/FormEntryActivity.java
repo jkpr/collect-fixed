@@ -1354,7 +1354,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 					mUseLog.log(UseLog.LEAVE_PROMPT);
 					// PMA-Logging END
                     saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
-            }
+				// PMA-Logging BEGIN
+            } else if (formController.getEvent() == FormEntryController.EVENT_BEGINNING_OF_FORM) {
+            	mUseLog.log(UseLog.LEAVE_PROMPT);
+				// PMA-Logging END
+			}
 
             View next;
             int event = formController.stepToNextScreenEvent();
@@ -1419,7 +1423,13 @@ public class FormEntryActivity extends Activity implements AnimationListener,
             }
 
             if (formController.getEvent() != FormEntryController.EVENT_BEGINNING_OF_FORM) {
-                int event = formController.stepToPreviousScreenEvent();
+				// PMA-Logging BEGIN
+                if (formController.getEvent() == FormEntryController.EVENT_END_OF_FORM) {
+					mUseLog.log(UseLog.LEAVE_PROMPT);
+				}
+				// PMA-Logging END
+
+				int event = formController.stepToPreviousScreenEvent();
 
                 if (event == FormEntryController.EVENT_BEGINNING_OF_FORM
                         || event == FormEntryController.EVENT_GROUP
@@ -2654,7 +2664,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 		refreshCurrentView();
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLog.ENTER_FORM);
+		mUseLog.log(UseLog.BEGIN_FORM);
 		// PMA-Logging END
 	}
 
