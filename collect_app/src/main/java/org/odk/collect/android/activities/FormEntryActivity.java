@@ -47,6 +47,7 @@ import org.odk.collect.android.tasks.FormLoaderTask;
 import org.odk.collect.android.tasks.SavePointTask;
 import org.odk.collect.android.tasks.SaveResult;
 import org.odk.collect.android.tasks.SaveToDiskTask;
+import org.odk.collect.android.tasks.UseLog;
 import org.odk.collect.android.utilities.CompatibilityUtils;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.MediaUtils;
@@ -180,6 +181,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private static final int SAVING_DIALOG = 2;
 	
 	private boolean mAutoSaved;
+
+	// PMA-Log: BEGIN
+	private UseLog mUseLog;
+	// PMA-Log: END
 
 	// Random ID
 	private static final int DELETE_REPEAT = 654321;
@@ -513,6 +518,14 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				mFormLoaderTask.execute(mFormPath);
 			}
 		}
+
+		// PMA-Logging: BEGIN
+		mUseLog = new UseLog();
+		mUseLog.p(t + "::onCreate");
+		FormController fc = Collect.getInstance().getFormController();
+		// File ip = fc.getInstancePath();
+		// Log.i(t, "Instance path: " + ip.toString());
+		// PMA-Logging: END
 	}
 
     /**
@@ -714,9 +727,13 @@ public class FormEntryActivity extends Activity implements AnimationListener,
             String bearing = intent.getStringExtra(BEARING_RESULT);
             ((ODKView) mCurrentView).setBinaryData(bearing);
             saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
+			break;
 		case HIERARCHY_ACTIVITY:
 			// We may have jumped to a new index in hierarchy activity, so
 			// refresh
+			// PMA-Logging BEGIN
+			mUseLog.log(UseLog.LEAVE_HIERARCHY);
+			// PMA-Logging END
 			break;
 
 		}
@@ -854,6 +871,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			if (formController.currentPromptIsQuestion()) {
 				saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			}
+			// PMA-Logging BEGIN
+			mUseLog.log(UseLog.ENTER_HIERARCHY);
+			// PMA-Logging END
 			Intent i = new Intent(this, FormHierarchyActivity.class);
 			startActivityForResult(i, HIERARCHY_ACTIVITY);
 			return true;
@@ -885,6 +905,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		if (formController.currentPromptIsQuestion()) {
 			LinkedHashMap<FormIndex, IAnswerData> answers = ((ODKView) mCurrentView)
 					.getAnswers();
+//			// PMA-Logging BEGIN
+//			for (LinkedHashMap.Entry<FormIndex, IAnswerData> entry : answers.entrySet()) {
+//				String xp = formController.getXPath(entry.getKey());
+//				IAnswerData iad = entry.getValue();
+//				if (null != iad) {
+//					String displayText = iad.getDisplayText();
+//					Log.d(t, "Saving current screen, key=\'" + xp + "\' value=\'" + displayText + "\'");
+//				} else {
+//					Log.d(t, "Saving current screen, key=\'" + xp + "\' value=\'" + iad + "\'");
+//				}
+//
+//			}
+//			// PMA-Logging END
             try {
                 FailedConstraint constraint = formController.saveAllScreenAnswers(answers, evaluateConstraints);
                 if (constraint != null) {
@@ -1311,9 +1344,15 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                         mBeenSwiped = false;
                         return;
                     }
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLog.LEAVE_PROMPT);
+					// PMA-Logging END
 
                     // otherwise, just save without validating (constraints will be validated on finalize)
                 } else
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLog.LEAVE_PROMPT);
+					// PMA-Logging END
                     saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
             }
 
@@ -1330,8 +1369,14 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     }
                     next = createView(event, true);
                     showView(next, AnimationType.RIGHT);
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLog.ENTER_PROMPT);
+					// PMA-Logging END
                     break;
                 case FormEntryController.EVENT_END_OF_FORM:
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLog.FINISH_FORM);
+					// PMA-Logging END
                 case FormEntryController.EVENT_REPEAT:
                     next = createView(event, true);
                     showView(next, AnimationType.RIGHT);
@@ -1367,6 +1412,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
             // The answer is saved on a back swipe, but question constraints are
             // ignored.
             if (formController.currentPromptIsQuestion()) {
+				// PMA-Logging BEGIN
+				mUseLog.log(UseLog.LEAVE_PROMPT);
+				// PMA-Logging END
                 saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
             }
 
@@ -1380,6 +1428,13 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     if ((++viewCount) % SAVEPOINT_INTERVAL == 0) {
                         nonblockingCreateSavePointData();
                     }
+					// PMA-Logging BEGIN
+					if (event != FormEntryController.EVENT_BEGINNING_OF_FORM) {
+						mUseLog.log(UseLog.ENTER_PROMPT);
+					} else {
+						mUseLog.log(UseLog.BEGIN_FORM);
+					}
+					// PMA-Logging END
                 }
                 View next = createView(event, false);
                 showView(next, AnimationType.LEFT);
@@ -1483,6 +1538,15 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                 || formController.getEvent() == FormEntryController.EVENT_REPEAT) {
             FormEntryPrompt[] prompts = Collect.getInstance().getFormController()
                     .getQuestionPrompts();
+//			//PMA-Logging BEGIN
+//			for (FormEntryPrompt p : prompts) {
+//				String xp = formController.getXPath(p.getIndex());
+//
+//				IAnswerData answer = p.getAnswerValue();
+//				Log.d(t, "Enter \'" + xp + "\' with value \'" + (answer == null ? null : answer.getDisplayText()) + "\'");
+//			}
+//			//PMA-Logging END
+
             for (FormEntryPrompt p : prompts) {
                 List<TreeElement> attrs = p.getBindAttributes();
                 for (int i = 0; i < attrs.size(); i++) {
@@ -2409,6 +2473,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		super.onDestroy();
 
+		// PMA-LOGGING: BEGIN
+		Log.i(t, "Stopping UseLog thread");
+		mUseLog.close();
+		Log.i(t, "::onDestroy, HandlerThread is alive == " + mUseLog.isAlive());
+		// PMA-LOGGING: END
 	}
 
 	private int mAnimationCompletionSet = 0;
@@ -2525,6 +2594,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			refreshCurrentView();
 			// process the pending activity request...
 			onActivityResult(requestCode, resultCode, intent);
+
+			// PMA-Logging BEGIN
+			// Not certain what needs to happen to get here.
+			mUseLog.log(UseLog.UNKNOWN_LOADING_COMPLETE);
+			// PMA-Logging END
 			return;
 		}
 
@@ -2569,14 +2643,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			if (!showFirst) {
 				// we've just loaded a saved form, so start in the hierarchy
 				// view
+				// PMA-Logging: this code runs if there is a save file.
 				Intent i = new Intent(this, FormHierarchyActivity.class);
-				startActivity(i);
+				startActivityForResult(i, HIERARCHY_ACTIVITY);
+				// PMA-Logging: uncomment to
+				// startActivity(i);
 				return; // so we don't show the intro screen before jumping to
 						// the hierarchy
 			}
 		}
-
 		refreshCurrentView();
+		// PMA-Logging BEGIN
+		mUseLog.log(UseLog.ENTER_FORM);
+		// PMA-Logging END
 	}
 
 	/**
