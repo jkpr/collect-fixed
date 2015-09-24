@@ -1418,20 +1418,26 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	 */
 	private void showPreviousView() {
         try {
-            FormController formController = Collect.getInstance()
+			FormController formController = Collect.getInstance()
                     .getFormController();
             // The answer is saved on a back swipe, but question constraints are
             // ignored.
             if (formController.currentPromptIsQuestion()) {
 				// PMA-Logging BEGIN
-				mUseLog.log(UseLog.LEAVE_PROMPT);
+//				mUseLog.log(UseLog.LEAVE_PROMPT);
 				// PMA-Logging END
                 saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
             }
 
             if (formController.getEvent() != FormEntryController.EVENT_BEGINNING_OF_FORM) {
 				// PMA-Logging BEGIN
-                if (formController.getEvent() == FormEntryController.EVENT_END_OF_FORM) {
+                if (formController.getEvent() == FormEntryController.EVENT_END_OF_FORM ||
+						formController.getEvent() == FormEntryController.EVENT_GROUP ||
+						// I do not think I need this. I had this in for removing a repeat and
+						// stepping backwards. So leaving it commented out for now.
+//						formController.getEvent() == FormEntryController.EVENT_REPEAT ||
+//						formController.getEvent() == FormEntryController.EVENT_PROMPT_NEW_REPEAT ||
+						formController.getEvent() == FormEntryController.EVENT_QUESTION) {
 					mUseLog.log(UseLog.LEAVE_PROMPT);
 				}
 				// PMA-Logging END
@@ -1510,8 +1516,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		// drop keyboard before transition...
 		if (mCurrentView != null) {
 			InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-			inputManager.hideSoftInputFromWindow(mCurrentView.getWindowToken(),
-					0);
+			inputManager.hideSoftInputFromWindow(mCurrentView.getWindowToken(), 0);
 		}
 
 		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
