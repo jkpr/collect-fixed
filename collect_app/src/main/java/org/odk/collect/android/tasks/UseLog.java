@@ -65,7 +65,8 @@ public class UseLog {
     public static final int FINISH_FORM = 13;
 
     // Weird cases
-    public static final int UNKNOWN_LOADING_COMPLETE = -1;
+    public static final int UNDEFINED_CONTROLLER = -1;
+    public static final int UNKNOWN_LOADING_COMPLETE = -2;
 
     private HandlerThread mThread;
     private LogHandler mHandler;
@@ -118,40 +119,53 @@ public class UseLog {
             case LEAVE_HIERARCHY:
             case ENTER_PROMPT:
             case LEAVE_PROMPT:
-                int formEvent = Collect.getInstance().getFormController().getEvent();
-                DataContainer d = new DataContainer();
-                if (formEvent == FormEntryController.EVENT_BEGINNING_OF_FORM) {
-                    d.xpath = getActionCode(BEGIN_FORM);
-                    d.timeStamp = getTimeStamp();
-                    Message m = obtainMessage(event, d);
-                    sendMessage(m);
-                    break;
-                } else if (formEvent == FormEntryController.EVENT_END_OF_FORM) {
-                    d.xpath = getActionCode(FINISH_FORM);
-                    d.timeStamp = getTimeStamp();
-                    Message m = obtainMessage(event, d);
-                    sendMessage(m);
-                    break;
-                }
-                /////////
+            case ON_PAUSE:
+            case ON_RESUME:
+            case ADD_REPEAT:
+            case REMOVE_REPEAT:
+            case SAVE_FORM:
+            case ENTER_FORM:
+            case LEAVE_FORM:
                 FormController formController = Collect.getInstance().getFormController();
-                if ( null != formController ) {
-                    FormEntryPrompt[] prompts = formController.getQuestionPrompts();
-                    for (FormEntryPrompt p : prompts) {
-                        String timeStamp = getTimeStamp();
-                        String xpath = formController.getXPath(p.getIndex());
-                        IAnswerData answer = p.getAnswerValue();
-                        String text = answer == null ? "" : answer.getDisplayText();
-                        String savedInstancePath = null;
-                        DataContainer data = new DataContainer(savedInstancePath, timeStamp, xpath,
-                                text);
-                        Message m = obtainMessage(event, data);
+                if ( null == formController ) {
+                    DataContainer d = new DataContainer();
+                    d.timeStamp = getTimeStamp();
+                    d.xpath = getActionCode(UNDEFINED_CONTROLLER);
+                    Message m = obtainMessage(event, d);
+                    sendMessage(m);
+                } else {
+                    int formEvent = formController.getEvent();
+                    if (formEvent == FormEntryController.EVENT_BEGINNING_OF_FORM) {
+                        DataContainer d = new DataContainer();
+                        d.xpath = getActionCode(BEGIN_FORM);
+                        d.timeStamp = getTimeStamp();
+                        Message m = obtainMessage(event, d);
                         sendMessage(m);
+                    } else if (formEvent == FormEntryController.EVENT_END_OF_FORM) {
+                        DataContainer d = new DataContainer();
+                        d.xpath = getActionCode(FINISH_FORM);
+                        d.timeStamp = getTimeStamp();
+                        Message m = obtainMessage(event, d);
+                        sendMessage(m);
+                    } else {
+                        FormEntryPrompt[] prompts = formController.getQuestionPrompts();
+                        for (FormEntryPrompt p : prompts) {
+                            String timeStamp = getTimeStamp();
+                            String xpath = formController.getXPath(p.getIndex());
+                            IAnswerData answer = p.getAnswerValue();
+                            String text = answer == null ? "" : answer.getDisplayText();
+                            String savedInstancePath = null;
+                            DataContainer data = new DataContainer(savedInstancePath, timeStamp,
+                                    xpath, text);
+                            Message m = obtainMessage(event, data);
+                            sendMessage(m);
+                        }
                     }
                 }
                 break;
             case BEGIN_FORM:
             case FINISH_FORM:
+            default:
                 String timeStamp = getTimeStamp();
                 String savedInstancePath = null;
                 String text = null;
@@ -159,8 +173,6 @@ public class UseLog {
                 DataContainer data = new DataContainer(savedInstancePath, timeStamp, xpath, text);
                 Message m = obtainMessage(event, data);
                 sendMessage(m);
-                break;
-            default:
                 break;
         }
     }
@@ -249,6 +261,8 @@ public class UseLog {
                 return "FF";
             case UNKNOWN_LOADING_COMPLETE:
                 return "uL";
+            case UNDEFINED_CONTROLLER:
+                return "uC";
             default:
                 return "##";
         }
