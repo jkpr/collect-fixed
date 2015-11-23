@@ -33,8 +33,19 @@ package org.odk.collect.android.exception;
  */
 public class UseLogException extends Exception {
 
+    private final int ERROR_CODE;
+
     public UseLogException() {
         super();
+        ERROR_CODE = 0;
     }
 
+    public UseLogException(int errorCode) {
+        super();
+        ERROR_CODE = errorCode;
+    }
+
+    public int getErrorCode() {
+        return ERROR_CODE;
+    }
 }

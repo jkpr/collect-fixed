@@ -2370,10 +2370,6 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				.getFormController();
 		dismissDialogs();
 
-		// PMA-Logging BEGIN
-		mUseLog.log(UseLog.ON_PAUSE);
-		// PMA-Logging END
-
 		// make sure we're not already saving to disk. if we are, currentPrompt
 		// is getting constantly updated
 		if (mSaveToDiskTask == null
@@ -2388,6 +2384,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		    ((ODKView)mCurrentView).stopAudio();
 		}
 
+		// PMA-Logging BEGIN
+		mUseLog.log(UseLog.ON_PAUSE);
+		// PMA-Logging END
 
 		super.onPause();
 	}
@@ -2694,6 +2693,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				// view
 				Intent i = new Intent(this, FormHierarchyActivity.class);
 				// PMA-Logging: this code runs if there is a save file.
+				mUseLog.log(UseLog.ENTER_HIERARCHY);
 				startActivityForResult(i, HIERARCHY_ACTIVITY);
 				// PMA-Logging: uncomment to
 				// startActivity(i);

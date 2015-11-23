@@ -36,17 +36,29 @@ import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.exception.UseLogException;
 import org.odk.collect.android.logic.FormController;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Creator: James K. Pringle
  * E-mail: jpringle@jhu.edu
  * Created: 17 September 2015
- * Last modified: 17 September 2015
+ * Last modified: 23 November 2015
  */
 public class UseLog {
     private static final String TAG = UseLog.class.getSimpleName();
     private static final boolean LOCAL_LOG = true;
+
+    private static final String ENCODING = "UTF-8";
+
+    // Exception error codes
+    private static final int NULL_CONTROLLER = 1;
+    private static final int NULL_INSTANCE = 2;
+    private static final int MV_FAILED = 3;
 
     // Events
     public static final int PRINT_STRING = 0;
@@ -64,7 +76,7 @@ public class UseLog {
     public static final int BEGIN_FORM = 12;
     public static final int FINISH_FORM = 13;
 
-    // Weird cases
+    // Weird events
     public static final int UNDEFINED_CONTROLLER = -1;
     public static final int UNKNOWN_LOADING_COMPLETE = -2;
 
@@ -75,6 +87,10 @@ public class UseLog {
     // Keep a reference to a handler.
     // Pass messages to handler at various times. Pass in a message
 
+    // Dealing with mFile I/O
+    private String mFile;
+    private BufferedOutputStream mBufferedStream;
+
     public UseLog() {
         mThread = new HandlerThread(TAG);
         mThread.start();
@@ -83,6 +99,8 @@ public class UseLog {
 
     // This works. I tested with sleeping and timing in FormEntryActivity onStop / onDestroy
     public void close() {
+        closeIo(true);
+
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -113,7 +131,126 @@ public class UseLog {
         }
     }
 
+    private void closeIo(boolean doInBackground) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                flush(false);
+                try {
+                    if (null != mBufferedStream) {
+                        mBufferedStream.close();
+                    }
+                } catch ( IOException e ) {
+                    // nothing to do here
+                }
+                mBufferedStream = null;
+            }
+        };
+        if ( doInBackground ) {
+            mHandler.post(r);
+        } else {
+            r.run();
+        }
+    }
+
+    // opens buffered output stream if not already open
+    private void openIo(boolean doInBackground) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if ( null != mBufferedStream ) {
+                    return;
+                }
+                try {
+                    File writeLocation = getWriteLocation();
+                    openOutBuffer(writeLocation);
+                } catch ( UseLogException e ) {
+                    // failure.
+                    closeIo(false);
+                } catch ( FileNotFoundException e ) {
+                    // failure
+                    closeIo(false);
+                }
+            }
+        };
+        if ( doInBackground ) {
+            mHandler.post(r);
+        } else {
+            r.run();
+        }
+    }
+
+    // FileOutputStream( ... , append = True) (2nd parameter)
+    private void openOutBuffer(File out) throws FileNotFoundException {
+        mFile = out.getAbsolutePath();
+        FileOutputStream fos = new FileOutputStream(mFile, true);
+        mBufferedStream = new BufferedOutputStream(fos);
+        if (LOCAL_LOG) {
+            Log.d(TAG, "Opened stream at " + mFile);
+        }
+    }
+
+    private void flush(boolean doInBackground) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if ( null != mBufferedStream ) {
+                    try {
+                        mBufferedStream.flush();
+                    } catch ( IOException e ) {
+                        Log.w(TAG, "Trying to flush buffered stream", e);
+                    }
+
+                }
+            }
+        };
+        if ( doInBackground ) {
+            mHandler.post(r);
+        } else {
+            r.run();
+        }
+    }
+
+    // to be called when FormEntryController saves. UI thread has this run in background
+    public void makeTempPermanent() {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    File tempLog = getTempLog();
+                    File saveLog = getSavedLog();
+
+                    // Finish current stream
+                    closeIo(false);
+                    // Copy file
+                    boolean success = tempLog.renameTo(saveLog);
+                    if ( !success ) {
+                        throw new UseLogException(MV_FAILED);
+                    }
+
+                    // Open new stream
+                    openOutBuffer(saveLog);
+
+                } catch (UseLogException e) {
+                    if (e.getErrorCode() == MV_FAILED) {
+                        Log.w(TAG, "Unable to mv file from tmp to permanent location");
+                    } else if (e.getErrorCode() == NULL_CONTROLLER || e.getErrorCode() == NULL_INSTANCE) {
+                        if (LOCAL_LOG) {
+                            Log.d(TAG, "Trying to copy file with null controller/instance");
+                        }
+                    }
+                } catch (FileNotFoundException e){
+                    // failure
+                    closeIo(false);
+                }
+            }
+        };
+        mHandler.post(r);
+    }
+
     public void log(int event) {
+        // Open OutputStream if possible
+        openIo(false);
         switch (event) {
             case ENTER_HIERARCHY:
             case LEAVE_HIERARCHY:
@@ -180,16 +317,47 @@ public class UseLog {
     private File getTempLog() throws UseLogException {
         FormController formController = Collect.getInstance().getFormController();
         if ( null == formController ) {
-            throw new UseLogException();
+            throw new UseLogException(NULL_CONTROLLER);
         }
         File instancePath = formController.getInstancePath();
         if ( null == instancePath ) {
-            throw new UseLogException();
+            throw new UseLogException(NULL_INSTANCE);
         }
 
         File tempSave = SaveToDiskTask.savepointFile(instancePath);
         File tempLog = new File(tempSave.getAbsolutePath() + ".log");
         return tempLog;
+    }
+
+    private File getSavedLog() throws UseLogException {
+        FormController formController = Collect.getInstance().getFormController();
+        if ( null == formController ) {
+            throw new UseLogException(NULL_CONTROLLER);
+        }
+        File instancePath = formController.getInstancePath();
+        if ( null == instancePath ) {
+            throw new UseLogException(NULL_INSTANCE);
+        }
+
+        File savedLog = new File(instancePath.getAbsolutePath() + ".log");
+        return savedLog;
+    }
+
+    private File getWriteLocation() throws UseLogException {
+        if ( null != mFile )  {
+            return new File(mFile);
+        }
+        
+        File tempLog = getTempLog();
+        File savedLog = getSavedLog();
+
+        File writeLocation;
+        if ( savedLog.exists() ) {
+            writeLocation = savedLog;
+        } else {
+            writeLocation = tempLog;
+        }
+        return writeLocation;
     }
 
     private String getTimeStamp() {
@@ -205,6 +373,10 @@ public class UseLog {
 
         String index = fc.getXPath(fc.getFormIndex());
         return index;
+    }
+    private Message obtainMessage(int what, Object obj) {
+        Message message = mHandler.obtainMessage(what, obj);
+        return message;
     }
 
     class DataContainer {
@@ -238,9 +410,9 @@ public class UseLog {
             case LEAVE_PROMPT:
                 return "LP";
             case ON_PAUSE:
-                return "OP";
+                return "oP";
             case ON_RESUME:
-                return "OR";
+                return "oR";
             case ADD_REPEAT:
                 return "AR";
             case REMOVE_REPEAT:
@@ -282,13 +454,43 @@ public class UseLog {
         String getRecord(int event, Object obj) {
             String actionCode = getActionCode(event);
             DataContainer data = (DataContainer) obj;
-            String r = actionCode + ", " + data.toString();
+            String r = data.timeStamp + "\t" + actionCode + "\t" + data.xpath + "\t" + data.value;
             return r;
         }
 
         void insertRecord(int event, Object obj) {
             String record = getRecord(event, obj);
-            Log.d(TAG, record);
+            if ( null != mFile && null != mBufferedStream) {
+                try {
+                    byte[] byteArray = record.getBytes(ENCODING);
+                    mBufferedStream.write(byteArray);
+                } catch (UnsupportedEncodingException e) {
+                    // does not recognize UTF-8?
+                } catch (IOException e) {
+                    // IO error with buffer approach
+                }
+            } else {
+                Log.d(TAG, record);
+            }
+        }
+
+        void insertRecord(String msg) {
+            if ( null == mBufferedStream ) {
+                Log.v(TAG, msg);
+            } else {
+                try {
+                    byte[] byteArray = msg.getBytes(ENCODING);
+                    mBufferedStream.write(byteArray);
+                    mBufferedStream.write('\n');
+                    Log.v(TAG, "Wrote record \'" + msg + "\' to file:" + mFile);
+                } catch (UnsupportedEncodingException e) {
+                    // does not recognize UTF-8?
+                    Log.w(TAG, "Error in " + ENCODING + " encoding of \'" + msg + "\'");
+                } catch (IOException e) {
+                    // IO error with buffer approach
+                    Log.w(TAG, "IOError while recording \'" + msg + "\'");
+                }
+            }
         }
 
         @Override
@@ -307,7 +509,8 @@ public class UseLog {
                 case LEAVE_HIERARCHY:
                 case BEGIN_FORM:
                 case FINISH_FORM:
-                    insertRecord(msg.what, msg.obj);
+                    String record = getRecord(msg.what, msg.obj);
+                    insertRecord(record);
                     break;
                 case PRINT_STRING:
                     print(msg.obj);
@@ -318,10 +521,4 @@ public class UseLog {
             }
         }
     }
-
-    private Message obtainMessage(int what, Object obj) {
-        Message message = mHandler.obtainMessage(what, obj);
-        return message;
-    }
-
 }
