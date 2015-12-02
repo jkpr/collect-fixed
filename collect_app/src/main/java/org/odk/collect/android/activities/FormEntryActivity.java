@@ -520,9 +520,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 
 		// PMA-Logging: BEGIN
-		mUseLog = new UseLog();
+		mUseLog = new UseLog(instancePath);
 		mUseLog.p(t + "::onCreate");
-		FormController fc = Collect.getInstance().getFormController();
+		// FormController fc = Collect.getInstance().getFormController();
 		// File ip = fc.getInstancePath();
 		// Log.i(t, "Instance path: " + ip.toString());
 		// PMA-Logging: END
@@ -559,6 +559,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 			// save the instance to a temp path...
 			nonblockingCreateSavePointData();
+			// PMA-Logging BEGIN
+			mUseLog.flush(true);
+			// PMA-Logging END
 		}
 		outState.putBoolean(NEWFORM, false);
 		outState.putString(KEY_ERROR, mErrorMessage);
@@ -1377,6 +1380,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     // create a savepoint
                     if ((++viewCount) % SAVEPOINT_INTERVAL == 0) {
                         nonblockingCreateSavePointData();
+						// PMA-Logging BEGIN
+						mUseLog.flush(true);
+						// PMA-Logging END
                     }
                     next = createView(event, true);
                     showView(next, AnimationType.RIGHT);
@@ -1450,6 +1456,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     // create savepoint
                     if ((++viewCount) % SAVEPOINT_INTERVAL == 0) {
                         nonblockingCreateSavePointData();
+						// PMA-Logging BEGIN
+						mUseLog.flush(true);
+						// PMA-Logging END
                     }
 					// PMA-Logging BEGIN
 					if (event != FormEntryController.EVENT_BEGINNING_OF_FORM) {
@@ -1952,6 +1961,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
         }
 
         synchronized (saveDialogLock) {
+			// PMA-Logging BEGIN
+			mUseLog.makeTempPermanent();
+			// PMA-Logging END
             mSaveToDiskTask = new SaveToDiskTask(getIntent().getData(), exit, complete,
                     updatedSaveName);
             mSaveToDiskTask.setFormSavedListener(this);
