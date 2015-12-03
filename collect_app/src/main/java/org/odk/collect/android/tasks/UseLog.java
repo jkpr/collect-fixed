@@ -56,6 +56,8 @@ public class UseLog {
     private static final boolean LOCAL_LOG = true;
     private static final boolean DIVERT_TO_LOGCAT = false;
 
+    private static final String USE_LOG_NAME = "log.txt";
+
     private static final String ENCODING = "UTF-8";
 
     // Exception error codes
@@ -377,7 +379,9 @@ public class UseLog {
             throw new UseLogException(NULL_INSTANCE);
         }
 
-        File savedLog = new File(instancePath.getAbsolutePath() + ".log");
+        String parentPath = instancePath.getAbsoluteFile().getParentFile().getAbsolutePath();
+        String savedPath = parentPath + File.separator + USE_LOG_NAME;
+        File savedLog = new File(savedPath);
         return savedLog;
     }
 
