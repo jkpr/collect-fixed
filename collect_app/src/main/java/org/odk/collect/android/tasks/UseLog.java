@@ -44,6 +44,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Creator: James K. Pringle
@@ -55,8 +57,10 @@ public class UseLog {
     private static final String TAG = UseLog.class.getSimpleName();
     private static final boolean LOCAL_LOG = true;
     private static final boolean DIVERT_TO_LOGCAT = false;
+    private static final boolean THIN_XPATH = true;
 
     private static final String USE_LOG_NAME = "log.txt";
+    private static final String LOG_VERSION = "v0.1";
 
     private static final String ENCODING = "UTF-8";
 
@@ -85,6 +89,7 @@ public class UseLog {
     public static final int UNDEFINED_CONTROLLER = -1;
     public static final int UNKNOWN_LOADING_COMPLETE = -2;
 
+    private List<String> mBackLog;
     private String mInstancePath;
     private HandlerThread mThread;
     private LogHandler mHandler;
@@ -98,6 +103,7 @@ public class UseLog {
     private BufferedOutputStream mBufferedStream;
 
     public UseLog(String instancePath) {
+        mBackLog = new ArrayList<String>();
         mInstancePath = instancePath;
         mThread = new HandlerThread(TAG);
         mThread.start();
@@ -506,7 +512,7 @@ public class UseLog {
                 case LEAVE_HIERARCHY:
                 case BEGIN_FORM:
                 case FINISH_FORM:
-                    writeRecord(msg.what, msg.obj);
+                    writeRecord(msg);
                     break;
                 case PRINT_STRING:
                     print(msg.obj);
@@ -517,8 +523,36 @@ public class UseLog {
             }
         }
 
-        void writeRecord(int event, Object obj) {
+        void writeRecord(Message msg) {
+            int event = msg.what;
+            Object obj = msg.obj;
             String record = getRecord(event, obj);
+            if ( null == mBufferedStream ) {
+                Log.w(TAG, record);
+                mBackLog.add(record);
+                if ( LOCAL_LOG ) {
+                    Log.d(TAG, "Added Message to mBackLog. Current size is " + mBackLog.size());
+                }
+            } else {
+                emptyBackLog();
+                writeOutRecord(record);
+            }
+        }
+
+        void emptyBackLog() {
+            while ( !mBackLog.isEmpty() ) {
+                if ( LOCAL_LOG ) {
+                    Log.d(TAG, "mBackLog.size() is " + mBackLog.size() + ". Removing Message from mBackLog.");
+                }
+                String record = mBackLog.remove(0);
+                if ( LOCAL_LOG ) {
+                    Log.d(TAG, "this message is null: " + (null == record));
+                }
+                writeOutRecord(record);
+            }
+        }
+
+        void writeOutRecord(String record) {
             if (DIVERT_TO_LOGCAT) {
                 Log.v(TAG, record);
             } else {
@@ -550,10 +584,24 @@ public class UseLog {
         String getRecord(int event, Object obj) {
             String actionCode = getActionCode(event);
             DataContainer data = (DataContainer) obj;
+            String xpath = thinXpath(data.xpath);
             String escapedValue = escapeForRecord(data.value);
-            String[] recordData = {data.timeStamp, actionCode, data.xpath, escapedValue};
+            String[] recordData = {data.timeStamp, actionCode, xpath, escapedValue};
             String r = TextUtils.join("\t", recordData);
             return r;
+        }
+
+        String thinXpath(String s) {
+            if ( null != s && THIN_XPATH ) {
+                int lastSlash = s.lastIndexOf("/");
+                if ( lastSlash >= 0 ) {
+                    int secondLastSlash = s.lastIndexOf("/", lastSlash - 1);
+                    if ( secondLastSlash >= 0 ) {
+                        s = s.substring(secondLastSlash);
+                    }
+                }
+            }
+            return s;
         }
 
         String escapeForRecord(String s) {
