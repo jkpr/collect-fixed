@@ -46,7 +46,9 @@ import org.odk.collect.android.provider.FormsProviderAPI.FormsColumns;
 import org.odk.collect.android.provider.InstanceProviderAPI;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
 import org.odk.collect.android.tasks.FormLoaderTask;
+import org.odk.collect.android.tasks.FormRelationsUseLog;
 import org.odk.collect.android.tasks.SaveToDiskTask;
+import org.odk.collect.android.tasks.UseLogContract;
 import org.odk.collect.android.utilities.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -132,26 +134,26 @@ public class FormRelationsManager {
     private static final String SAVE_FORM = "saveForm";
     private static final String DELETE_FORM = "deleteForm";
 
-    private long parentId;
-    private ArrayList<TraverseData> allTraverseData;
-    private int maxRepeatIndex;
-    private ArrayList<TraverseData> nonRelevantSaveForm;
-    private boolean hasDeleteForm;
+    private long mInstanceId;
+    private ArrayList<TraverseData> mAllTraverseData;
+    private int mMaxRepeatIndex;
+    private ArrayList<TraverseData> mNonRelevantSaveForm;
+    private boolean mHasDeleteForm;
 
     public FormRelationsManager() {
-        parentId = -1;
-        allTraverseData = new ArrayList<TraverseData>();
-        maxRepeatIndex = 0;
-        nonRelevantSaveForm = new ArrayList<TraverseData>();
-        hasDeleteForm = false;
+        mInstanceId = -1;
+        mAllTraverseData = new ArrayList<TraverseData>();
+        mMaxRepeatIndex = 0;
+        mNonRelevantSaveForm = new ArrayList<TraverseData>();
+        mHasDeleteForm = false;
     }
 
     public FormRelationsManager(long parentId) {
-        this.parentId = parentId;
-        allTraverseData = new ArrayList<TraverseData>();
-        maxRepeatIndex = 0;
-        nonRelevantSaveForm = new ArrayList<TraverseData>();
-        hasDeleteForm = false;
+        mInstanceId = parentId;
+        mAllTraverseData = new ArrayList<TraverseData>();
+        mMaxRepeatIndex = 0;
+        mNonRelevantSaveForm = new ArrayList<TraverseData>();
+        mHasDeleteForm = false;
     }
 
     /**
@@ -235,6 +237,12 @@ public class FormRelationsManager {
                 }
 
                 if ( !childNode.getTextContent().equals(parentNode.getTextContent()) ) {
+                    // PMA-Logging BEGIN
+                    // Get mapping.parentNode, get childNode.getTextContent()
+                    // Add to cache
+                    // PMA-Logging END
+
+
                     Log.i(TAG, "Found difference updating parent form @ parent node \'" +
                             parentNode.getNodeName() + "\'. Child: \'" +
                             childNode.getTextContent() + "\' <> Parent: \'" +
@@ -246,6 +254,10 @@ public class FormRelationsManager {
 
             if (editedParentForm) {
                 writeDocumentToFile(parentDocument, parentInstancePath);
+                // PMA-Logging BEGIN
+                // rV
+                // Write cache
+                // PMA-Logging END
                 ContentValues cv = new ContentValues();
                 cv.put(InstanceColumns.STATUS, InstanceProviderAPI.STATUS_INCOMPLETE);
                 Collect.getInstance().getContentResolver().update(getInstanceUriFromId(parentId),
@@ -318,7 +330,7 @@ public class FormRelationsManager {
      *
      * This method traverses the JavaRosa tree analyzing all attributes and
      * values. The only difference with the other version of this overloaded
-     * method is that the object member `parentId` is not set.
+     * method is that the object member `mInstanceId` is not set.
      *
      * @param instanceRoot Root of the JavaRosa tree built during the survey.
      * @return Returns a properly initialized FormRelationsManager, containing
@@ -397,17 +409,32 @@ public class FormRelationsManager {
     private void manageDeletions() {
         int deleteWhat = getWhatToDelete();
         if ( deleteWhat == DELETE_THIS ) {
-            deleteInstance(parentId);
+            // PMA-Logging BEGIN
+//            try {
+//                // possible racing? writing for value differences, then writing for deletion
+//                long thisParentId = FormRelationsDb.getParent(mInstanceId);
+//                String thisParent = getInstancePath(getInstanceUriFromId(thisParentId));
+//                String repeatable = FormRelationsDb.getRepeatable(thisParentId, mInstanceId);
+//                int repeatIndex = FormRelationsDb.getRepeatIndex(thisParentId, mInstanceId);
+//                FormRelationsUseLog frul = new FormRelationsUseLog(thisParent);
+//                frul.log(UseLogContract.RELATION_SELF_DESTRUCT, repeatable, String.valueOf(repeatIndex));
+//                frul.writeBackLog(true);
+//                frul.close();
+//            } catch (FormRelationsException e) {
+//                Log.w(TAG, "Failed to log self-deletion", e);
+//            }
+            // PMA-Logging END
+            deleteInstance(mInstanceId);
         } else if ( deleteWhat == DELETE_CHILD ) {
             TreeSet<Integer> allRepeatIndices = new TreeSet<Integer>();
-            for (TraverseData td : nonRelevantSaveForm ) {
+            for (TraverseData td : mNonRelevantSaveForm) {
                 allRepeatIndices.add(td.repeatIndex);
             }
             TreeSet<Long> allWaywardChildren = new TreeSet<Long>();
             for (Integer i : allRepeatIndices) {
-                Long childInstanceId = FormRelationsDb.getChild(parentId, i);
+                Long childInstanceId = FormRelationsDb.getChild(mInstanceId, i);
                 if (LOCAL_LOG) {
-                    Log.d(TAG, "ParentId(" + parentId + ") + RepeatIndex(" + i +
+                    Log.d(TAG, "ParentId(" + mInstanceId + ") + RepeatIndex(" + i +
                             ") + ChildIdFound(" + childInstanceId +")");
                 }
                 if (childInstanceId != -1) {
@@ -415,6 +442,9 @@ public class FormRelationsManager {
                 }
             }
             for (Long childInstanceId : allWaywardChildren) {
+                // PMA-Logging BEGIN
+                // Get true mInstanceId, write rD to parent log.txt
+                // PMA-Logging END
                 deleteInstance(childInstanceId);
             }
         }
@@ -461,16 +491,16 @@ public class FormRelationsManager {
      */
     private boolean outputOrUpdateChildForms() {
         boolean hasChild = false;
-        if ( hasDeleteForm ) { // Children to be deleted. Just return.
+        if (mHasDeleteForm) { // Children to be deleted. Just return.
             return hasChild;
         }
 
-        for (int i = 1; i <= maxRepeatIndex; i++ ) {
+        for (int i = 1; i <= mMaxRepeatIndex; i++ ) {
             ArrayList<TraverseData> saveFormMapping = new ArrayList<TraverseData>();
             ArrayList<TraverseData> saveInstanceMapping = new ArrayList<TraverseData>();
 
             // Build up `saveFormMapping` and `saveInstanceMapping` for repeat index `i`
-            for (Iterator<TraverseData> it = allTraverseData.iterator(); it.hasNext(); ) {
+            for (Iterator<TraverseData> it = mAllTraverseData.iterator(); it.hasNext(); ) {
                 TraverseData td = it.next();
                 if (td.repeatIndex == i) {
                     if (SAVE_FORM.equals(td.attr)) {
@@ -555,7 +585,7 @@ public class FormRelationsManager {
         Uri childInstance;
 
         int repeatIndex = getRepeatIndex(saveFormMapping, saveInstanceMapping);
-        long childId = FormRelationsDb.getChild(parentId, repeatIndex);
+        long childId = FormRelationsDb.getChild(mInstanceId, repeatIndex);
         if (LOCAL_LOG) {
             Log.d(TAG, "From relations database, child id is: " + childId);
         }
@@ -727,6 +757,9 @@ public class FormRelationsManager {
         }
 
         exportData(formController);
+        // PMA-Logging BEGIN
+        // create log.txt for this instancePath.
+        // PMA-Logging END
         Uri createdInstance = updateInstanceDatabase(formUri, instancePath);
         return createdInstance;
     }
@@ -886,6 +919,9 @@ public class FormRelationsManager {
                 try {
                     boolean isThisModified = insertIntoChild(td, document);
                     if (isThisModified) {
+                        // PMA-Logging BEGIN
+                        // Build up a cache
+                        // PMA-Logging END
                         checkCopyBinaryFile(td, childInstancePath);
                     }
                     isInstanceModified = isInstanceModified || isThisModified;
@@ -897,13 +933,17 @@ public class FormRelationsManager {
                     }
                 }
 
-                updateRelationsDatabase(parentId, td.instanceXpath, repeatIndex, childId,
+                updateRelationsDatabase(mInstanceId, td.instanceXpath, repeatIndex, childId,
                         td.attrValue, td.repeatableNode);
             }
 
             if (isInstanceModified) {
                 // only need to update xml if something changed
                 writeDocumentToFile(document, childInstancePath);
+
+                // PMA-Logging BEGIN
+                // Write the cache
+                // PMA-Logging END
 
                 // Set status to incomplete
                 ContentValues values = new ContentValues();
@@ -1157,7 +1197,7 @@ public class FormRelationsManager {
                 childInstanceValue.endsWith(".mp4") || childInstanceValue.endsWith(".png")) {
             // check for more extensions?
 
-            Uri parentInstance = getInstanceUriFromId(parentId);
+            Uri parentInstance = getInstanceUriFromId(mInstanceId);
             String parentInstancePath = getInstancePath(parentInstance);
             toReturn = copyBinaryFile(parentInstancePath, childInstancePath, childInstanceValue);
         }
@@ -1346,7 +1386,7 @@ public class FormRelationsManager {
      * is parsed from the xpath.
      *
      * Depending on `isRelevant` the information goes into either the object
-     * member `allTraverseData` or the object member `nonRelevantSaveForm`.
+     * member `mAllTraverseData` or the object member `mNonRelevantSaveForm`.
      *
      * @param attr The tag attribute
      * @param attrValue The value associated with the attribute
@@ -1372,9 +1412,9 @@ public class FormRelationsManager {
             if ( DELETE_FORM.equals(attr) ) {
                 throw new FormRelationsException(DELETE_FORM);
             }
-            allTraverseData.add(td);
+            mAllTraverseData.add(td);
         } else if ( SAVE_FORM.equals(td.attr) ) {
-            nonRelevantSaveForm.add(td);
+            mNonRelevantSaveForm.add(td);
         }
 
     }
@@ -1436,7 +1476,7 @@ public class FormRelationsManager {
                     repeatIndex = potentialRepeat;
                     numNonOne += 1;
                 }
-                maxRepeatIndex = Math.max(maxRepeatIndex, repeatIndex);
+                mMaxRepeatIndex = Math.max(mMaxRepeatIndex, repeatIndex);
             } catch (NumberFormatException e) {
                 Log.w(TAG, "Error parsing repeat index to int: \'" + instanceXpath + "\'");
             }
@@ -1671,16 +1711,16 @@ public class FormRelationsManager {
      */
     public int getHowManyToDelete() {
         int howMany = 0;
-        if ( hasDeleteForm ) {
+        if (mHasDeleteForm) {
             howMany++;
-            howMany += FormRelationsDb.getChildren(parentId).length;
+            howMany += FormRelationsDb.getChildren(mInstanceId).length;
         } else {
             TreeSet<Integer> allRepeatIndices = new TreeSet<Integer>();
-            for (TraverseData td : nonRelevantSaveForm ) {
+            for (TraverseData td : mNonRelevantSaveForm) {
                 allRepeatIndices.add(td.repeatIndex);
             }
             for (Integer i : allRepeatIndices) {
-                if (FormRelationsDb.getChild(parentId, i) != -1) {
+                if (FormRelationsDb.getChild(mInstanceId, i) != -1) {
                     howMany++;
                 }
             }
@@ -1701,17 +1741,17 @@ public class FormRelationsManager {
      */
     public int getHowManyToDelete(int repeatIndex) {
         int howMany = 0;
-        if ( hasDeleteForm ) {
+        if (mHasDeleteForm) {
             howMany++;
-            howMany += FormRelationsDb.getChildren(parentId).length;
+            howMany += FormRelationsDb.getChildren(mInstanceId).length;
         } else {
             TreeSet<Integer> allRepeatIndices = new TreeSet<Integer>();
             allRepeatIndices.add(repeatIndex);
-            for (TraverseData td : nonRelevantSaveForm ) {
+            for (TraverseData td : mNonRelevantSaveForm) {
                 allRepeatIndices.add(td.repeatIndex);
             }
             for (Integer i : allRepeatIndices) {
-                if (FormRelationsDb.getChild(parentId, i) != -1) {
+                if (FormRelationsDb.getChild(mInstanceId, i) != -1) {
                     howMany++;
                 }
             }
@@ -1730,15 +1770,15 @@ public class FormRelationsManager {
      */
     public int getWhatToDelete() {
         int returnCode = NO_DELETE;
-        if ( hasDeleteForm ) {
+        if (mHasDeleteForm) {
             returnCode = DELETE_THIS;
-        } else if ( parentId != -1 ) {
+        } else if ( mInstanceId != -1 ) {
             TreeSet<Integer> allRepeatIndices = new TreeSet<Integer>();
-            for (TraverseData td : nonRelevantSaveForm ) {
+            for (TraverseData td : mNonRelevantSaveForm) {
                 allRepeatIndices.add(td.repeatIndex);
             }
             for (Integer i : allRepeatIndices) {
-                if (FormRelationsDb.getChild(parentId, i) != -1) {
+                if (FormRelationsDb.getChild(mInstanceId, i) != -1) {
                     returnCode = DELETE_CHILD;
                     break;
                 }
@@ -1761,16 +1801,16 @@ public class FormRelationsManager {
      */
     public int getWhatToDelete(int repeatIndex) {
         int returnCode = NO_DELETE;
-        if ( hasDeleteForm ) {
+        if (mHasDeleteForm) {
             returnCode = DELETE_THIS;
-        } else if ( parentId != -1 ) {
+        } else if ( mInstanceId != -1 ) {
             TreeSet<Integer> allRepeatIndices = new TreeSet<Integer>();
             allRepeatIndices.add(repeatIndex);
-            for (TraverseData td : nonRelevantSaveForm ) {
+            for (TraverseData td : mNonRelevantSaveForm) {
                 allRepeatIndices.add(td.repeatIndex);
             }
             for (Integer i : allRepeatIndices) {
-                if (FormRelationsDb.getChild(parentId, i) != -1) {
+                if (FormRelationsDb.getChild(mInstanceId, i) != -1) {
                     returnCode = DELETE_CHILD;
                     break;
                 }
@@ -1780,18 +1820,18 @@ public class FormRelationsManager {
     }
 
     public void setDeleteForm(boolean val) {
-        hasDeleteForm = val;
+        mHasDeleteForm = val;
     }
 
-    public void setParentId(long id) {
-        parentId = id;
+    public void setInstanceId(long id) {
+        mInstanceId = id;
     }
 
-    public long getParentId() {
-        return parentId;
+    public long getInstanceId() {
+        return mInstanceId;
     }
 
     public boolean getDeleteForm() {
-        return hasDeleteForm;
+        return mHasDeleteForm;
     }
 }

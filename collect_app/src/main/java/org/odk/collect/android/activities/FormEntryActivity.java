@@ -48,6 +48,7 @@ import org.odk.collect.android.tasks.SavePointTask;
 import org.odk.collect.android.tasks.SaveResult;
 import org.odk.collect.android.tasks.SaveToDiskTask;
 import org.odk.collect.android.tasks.UseLog;
+import org.odk.collect.android.tasks.UseLogContract;
 import org.odk.collect.android.utilities.CompatibilityUtils;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.MediaUtils;
@@ -466,6 +467,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 									+ "_";
 							final String fileSuffix = ".xml.save";
 							File cacheDir = new File(Collect.CACHE_PATH);
+							// Searches in the cache dir for files that start with the form
+							// and end with ".xml.save"
 							File[] files = cacheDir.listFiles(new FileFilter() {
 								@Override
 								public boolean accept(File pathname) {
@@ -520,7 +523,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 
 		// PMA-Logging: BEGIN
-		mUseLog = new UseLog(instancePath);
+		mUseLog = new UseLog(instancePath, false);
 		mUseLog.p(t + "::onCreate");
 		// FormController fc = Collect.getInstance().getFormController();
 		// File ip = fc.getInstancePath();
@@ -735,7 +738,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			// We may have jumped to a new index in hierarchy activity, so
 			// refresh
 			// PMA-Logging BEGIN
-			mUseLog.log(UseLog.LEAVE_HIERARCHY);
+			mUseLog.log(UseLogContract.LEAVE_HIERARCHY);
 			// PMA-Logging END
 			break;
 
@@ -857,7 +860,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			int whatToDelete = frm.getWhatToDelete();
 			if (whatToDelete == FormRelationsManager.NO_DELETE) {
 				// PMA-Logging BEGIN
-				mUseLog.log(UseLog.SAVE_FORM);
+				mUseLog.log(UseLogContract.SAVE_FORM);
 				// PMA-Logging END
 				saveDataToDisk(DO_NOT_EXIT, isInstanceComplete(false), null);
 			} else {
@@ -878,7 +881,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			}
 			// PMA-Logging BEGIN
-			mUseLog.log(UseLog.ENTER_HIERARCHY);
+			mUseLog.log(UseLogContract.ENTER_HIERARCHY);
 			// PMA-Logging END
 			Intent i = new Intent(this, FormHierarchyActivity.class);
 			startActivityForResult(i, HIERARCHY_ACTIVITY);
@@ -1234,7 +1237,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 										Toast.LENGTH_SHORT).show();
 							} else {
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLog.LEAVE_FORM);
+								mUseLog.log(UseLogContract.LEAVE_FORM);
 								// PMA-Logging END
 
 								// PMA-Linking BEGIN
@@ -1355,18 +1358,18 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                         return;
                     }
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLog.LEAVE_PROMPT);
+					mUseLog.log(UseLogContract.LEAVE_PROMPT);
 					// PMA-Logging END
 
                     // otherwise, just save without validating (constraints will be validated on finalize)
                 } else
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLog.LEAVE_PROMPT);
+					mUseLog.log(UseLogContract.LEAVE_PROMPT);
 					// PMA-Logging END
                     saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 				// PMA-Logging BEGIN
             } else if (formController.getEvent() == FormEntryController.EVENT_BEGINNING_OF_FORM) {
-            	mUseLog.log(UseLog.LEAVE_PROMPT);
+            	mUseLog.log(UseLogContract.LEAVE_PROMPT);
 				// PMA-Logging END
 			}
 
@@ -1387,12 +1390,12 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     next = createView(event, true);
                     showView(next, AnimationType.RIGHT);
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLog.ENTER_PROMPT);
+					mUseLog.log(UseLogContract.ENTER_PROMPT);
 					// PMA-Logging END
                     break;
                 case FormEntryController.EVENT_END_OF_FORM:
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLog.FINISH_FORM);
+					mUseLog.log(UseLogContract.FINISH_FORM);
 					// PMA-Logging END
                 case FormEntryController.EVENT_REPEAT:
                     next = createView(event, true);
@@ -1430,7 +1433,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
             // ignored.
             if (formController.currentPromptIsQuestion()) {
 				// PMA-Logging BEGIN
-//				mUseLog.log(UseLog.LEAVE_PROMPT);
+//				mUseLog.log(UseLogContract.LEAVE_PROMPT);
 				// PMA-Logging END
                 saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
             }
@@ -1444,7 +1447,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 //						formController.getEvent() == FormEntryController.EVENT_REPEAT ||
 //						formController.getEvent() == FormEntryController.EVENT_PROMPT_NEW_REPEAT ||
 						formController.getEvent() == FormEntryController.EVENT_QUESTION) {
-					mUseLog.log(UseLog.LEAVE_PROMPT);
+					mUseLog.log(UseLogContract.LEAVE_PROMPT);
 				}
 				// PMA-Logging END
 
@@ -1462,9 +1465,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     }
 					// PMA-Logging BEGIN
 					if (event != FormEntryController.EVENT_BEGINNING_OF_FORM) {
-						mUseLog.log(UseLog.ENTER_PROMPT);
+						mUseLog.log(UseLogContract.ENTER_PROMPT);
 					} else {
-						mUseLog.log(UseLog.BEGIN_FORM);
+						mUseLog.log(UseLogContract.BEGIN_FORM);
 					}
 					// PMA-Logging END
                 }
@@ -1694,7 +1697,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 					try {
 						formController.newRepeat();
 						// PMA-Logging BEGIN
-						mUseLog.log(UseLog.ADD_REPEAT);
+						mUseLog.log(UseLogContract.ADD_REPEAT);
 						// PMA-Logging END
 					} catch (Exception e) {
 						FormEntryActivity.this.createErrorDialog(
@@ -1846,7 +1849,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 							.logInstanceAction(this,
 									"createDeleteRepeatConfirmDialog", "OK");
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLog.REMOVE_REPEAT);
+					mUseLog.log(UseLogContract.REMOVE_REPEAT);
 					// PMA-Logging END
 					formController.deleteRepeat();
 					showPreviousView();
@@ -1877,7 +1880,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		Log.d(t, "createDeleteFormDialog found repeatIndex (" + repeatIndex + ")");
 
-		final long instanceId = frm.getParentId();
+		final long instanceId = frm.getInstanceId();
 		final int whatToDelete = frm.getWhatToDelete();
 		final int howManyToDelete;
 		if (isDeleteRepeat) {
@@ -1909,11 +1912,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 							if ( isDeleteRepeat ) {
 								FormRelationsManager.manageRepeatDelete(instanceId, repeatIndex);
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLog.REMOVE_REPEAT);
+								mUseLog.log(UseLogContract.REMOVE_REPEAT);
 								// PMA-Logging END
 								formController.deleteRepeat();
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLog.SAVE_FORM);
+								mUseLog.log(UseLogContract.SAVE_FORM);
 								// PMA-Logging END
 								saveDataToDisk(false, false, name);
 								showPreviousView();
@@ -1921,7 +1924,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 								saveDataToDisk(true, false, name);
 							} else {
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLog.SAVE_FORM);
+								mUseLog.log(UseLogContract.SAVE_FORM);
 								// PMA-Logging END
 								saveDataToDisk(exit, complete, name);
 							}
@@ -2045,7 +2048,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 									int whatToDelete = frm.getWhatToDelete();
 									if (whatToDelete == FormRelationsManager.NO_DELETE) {
 										// PMA-Logging BEGIN
-										mUseLog.log(UseLog.SAVE_FORM);
+										mUseLog.log(UseLogContract.SAVE_FORM);
 										// PMA-Logging END
 										saveDataToDisk(EXIT, isInstanceComplete(false), null);
 									} else {
@@ -2397,7 +2400,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLog.ON_PAUSE);
+		mUseLog.log(UseLogContract.ON_PAUSE);
 		// PMA-Logging END
 
 		super.onPause();
@@ -2446,7 +2449,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLog.ON_RESUME);
+		mUseLog.log(UseLogContract.ON_RESUME);
 		// PMA-Logging END
 
 		if (mSaveToDiskTask != null) {
@@ -2657,7 +2660,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 			// PMA-Logging BEGIN
 			// Not certain what needs to happen to get here.
-			mUseLog.log(UseLog.UNKNOWN_LOADING_COMPLETE);
+			mUseLog.log(UseLogContract.UNKNOWN_LOADING_COMPLETE);
 			// PMA-Logging END
 			return;
 		}
@@ -2705,7 +2708,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				// view
 				Intent i = new Intent(this, FormHierarchyActivity.class);
 				// PMA-Logging: this code runs if there is a save file.
-				mUseLog.log(UseLog.ENTER_HIERARCHY);
+				mUseLog.log(UseLogContract.ENTER_HIERARCHY);
 				startActivityForResult(i, HIERARCHY_ACTIVITY);
 				// PMA-Logging: uncomment to
 				// startActivity(i);
@@ -2715,7 +2718,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		}
 		refreshCurrentView();
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLog.BEGIN_FORM);
+		mUseLog.log(UseLogContract.BEGIN_FORM);
 		// PMA-Logging END
 	}
 
