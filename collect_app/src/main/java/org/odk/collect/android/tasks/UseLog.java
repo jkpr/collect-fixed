@@ -34,10 +34,11 @@ import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.database.FormRelationsDb;
 import org.odk.collect.android.exception.UseLogException;
 import org.odk.collect.android.logic.FormController;
+import org.odk.collect.android.logic.FormRelationsManager;
 import org.odk.collect.android.tasks.UseLogContract.DataContainer;
-import org.odk.collect.android.utilities.FileUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -83,7 +84,7 @@ public class UseLog {
     private String mFile;
 
     public UseLog(String instancePath, boolean oneTime) {
-        // Seems like a brand new blank form would have a null instancePath at this time.
+        // A brand new blank form would have a null instancePath at this time.
         if ( LOCAL_LOG ) {
             Log.d(TAG, "Initializing UseLog with instancePath==\"" + instancePath + "\"");
         }
@@ -93,7 +94,7 @@ public class UseLog {
         mThread.start();
         mHandler = new LogHandler(mThread.getLooper());
         mOneTime = oneTime;
-        openIo(true);
+        //openIo(true);
     }
 
     // This works. I tested with sleeping and timing in FormEntryActivity onStop / onDestroy
@@ -120,11 +121,6 @@ public class UseLog {
         }
     }
 
-    public void p(String s) {
-        Message m = obtainMessage(UseLogContract.PRINT_STRING, s);
-        sendMessage(m);
-    }
-
     private boolean sendMessage(Message msg) {
         boolean success = mHandler.sendMessage(msg);
         return success;
@@ -138,39 +134,20 @@ public class UseLog {
                 if ( null != mBufferedStream ) {
                     return;
                 }
-                updateIo(false);
-            }
-        };
-        if ( doInBackground ) {
-            mHandler.post(r);
-        } else {
-            r.run();
-        }
-    }
-
-    private void updateIo(boolean doInBackground) {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
                 try {
 //                    if ( !mOneTime ) {
 //                    copyOldTemp();
 //                    }
-                    File writeLocation = getWriteLocation(!mOneTime);
+                    File writeLocation = getWriteLocation();
                     openOutBuffer(writeLocation);
                 } catch ( UseLogException e ) {
-                    // failure.
-                    if ( LOCAL_LOG ) {
-                        Log.d(TAG, "Use log exception", e);
-                    }
-
+                    // failure. not necessarily a problem...
                     closeIo(false);
                 } catch ( FileNotFoundException e ) {
                     // failure
                     if ( LOCAL_LOG ) {
                         Log.d(TAG, "File not found exception", e);
                     }
-
                     closeIo(false);
                 }
             }
@@ -202,6 +179,18 @@ public class UseLog {
     public void writePreamble() {
         String preamble = "# Log " + UseLogContract.LOG_VERSION;
         writeOutLine(preamble);
+    }
+
+    public void writeBackLogAndClose() {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                openIo(false);
+                emptyBackLog();
+                closeIo(false);
+            }
+        };
+        mHandler.post(r);
     }
 
     private void closeIo(boolean doInBackground) {
@@ -260,8 +249,8 @@ public class UseLog {
             @Override
             public void run() {
                 try{
-                    File tempLog = getTempLog(true);
-                    File saveLog = getSavedLog(true);
+                    File tempLog = getTempLog();
+                    File saveLog = getSavedLog();
 
                     if ( saveLog.exists() ) {
                         return;
@@ -297,7 +286,7 @@ public class UseLog {
 
     // runs in ui thread. collects all the information needed for log and passes to looper
     public void log(int event) {
-        updateIo(true);
+        openIo(true);
         switch (event) {
             case UseLogContract.ENTER_HIERARCHY:
             case UseLogContract.LEAVE_HIERARCHY:
@@ -361,6 +350,40 @@ public class UseLog {
         }
     }
 
+    public void log(int event, long instanceId, String xpath, String value) {
+        switch (event) {
+            case UseLogContract.RELATION_CHANGE_VALUE:
+            case UseLogContract.RELATION_CREATE_FORM:
+                if ( null == mInstancePath ) {
+                    mInstancePath = FormRelationsManager.getInstancePath(instanceId);
+                }
+                break;
+            case UseLogContract.RELATION_SELF_DESTRUCT:
+                long parentId = FormRelationsDb.getParent(instanceId);
+                if ( null == mInstancePath ) {
+                    mInstancePath = FormRelationsManager.getInstancePath(parentId);
+                }
+                break;
+//            case UseLogContract.RELATION_REMOVE_REPEAT:
+//            case UseLogContract.RELATION_DELETE_FORM:
+            default:
+                break;
+        }
+
+        DataContainer d = new DataContainer();
+        d.timeStamp = getTimeStamp();
+        d.xpath = xpath;
+        d.value = value;
+        Message m = obtainMessage(event, d);
+        sendMessage(m);
+    }
+
+
+/*
+    from my testing, copying the old temp is not necessary. I cleared odk app from app list
+    while filling out form, the app appended to the log as expected. when i started a new version
+    of the same form, the log started on a new file corresponding to the new version.
+     */
 //    private void copyOldTemp() {
 //        try {
 //            if (null != mInstancePath) {
@@ -381,9 +404,26 @@ public class UseLog {
 //        }
 //    }
 
-    private File getTempLog(boolean fromFormController) throws UseLogException {
+    private File getWriteLocation() throws UseLogException {
+        if ( null != mFile && null != mBufferedStream )  {
+            return new File(mFile);
+        }
+
+        File tempLog = getTempLog();
+        File savedLog = getSavedLog();
+
+        File writeLocation;
+        if ( mOneTime || savedLog.exists() ) {
+            writeLocation = savedLog;
+        } else {
+            writeLocation = tempLog;
+        }
+        return writeLocation;
+    }
+
+    private File getTempLog() throws UseLogException {
         File instancePath;
-        if ( fromFormController ) {
+        if ( !mOneTime ) {
             FormController formController = Collect.getInstance().getFormController();
             if (null == formController) {
                 throw new UseLogException(NULL_CONTROLLER);
@@ -404,9 +444,9 @@ public class UseLog {
         return tempLog;
     }
 
-    private File getSavedLog(boolean fromFormController) throws UseLogException {
+    private File getSavedLog() throws UseLogException {
         File instancePath;
-        if ( fromFormController ) {
+        if ( !mOneTime ) {
             FormController formController = Collect.getInstance().getFormController();
             if ( null == formController ) {
                 throw new UseLogException(NULL_CONTROLLER);
@@ -425,23 +465,6 @@ public class UseLog {
         String savedPath = parentPath + File.separator + UseLogContract.USE_LOG_NAME;
         File savedLog = new File(savedPath);
         return savedLog;
-    }
-
-    private File getWriteLocation(boolean fromFormController) throws UseLogException {
-        if ( null != mFile && null != mBufferedStream )  {
-            return new File(mFile);
-        }
-
-        File tempLog = getTempLog(fromFormController);
-        File savedLog = getSavedLog(fromFormController);
-
-        File writeLocation;
-        if ( !fromFormController || savedLog.exists() ) {
-            writeLocation = savedLog;
-        } else {
-            writeLocation = tempLog;
-        }
-        return writeLocation;
     }
 
     private String getTimeStamp() {
@@ -464,6 +487,13 @@ public class UseLog {
         return message;
     }
 
+    private void backLogPushBack(String s) {
+        mBackLog.add(s);
+        if ( LOCAL_LOG ) {
+            Log.d(TAG, "mBackLog.size() is " + mBackLog.size() + ". Added \"" + s + "\" to mBackLog.");
+        }
+    }
+
     private void emptyBackLog() {
         while ( !mBackLog.isEmpty() ) {
             if ( LOCAL_LOG ) {
@@ -481,20 +511,20 @@ public class UseLog {
         if (UseLogContract.DIVERT_TO_LOGCAT) {
             Log.v(TAG, record);
         } else {
-            insertLineInLog(record);
+            appendLineToLog(record);
         }
     }
 
-    private void insertLineInLog(String record) {
+    private void appendLineToLog(String record) {
         if ( null == mBufferedStream ) {
-            Log.w(TAG, record);
+            Log.w(TAG, "##" + record);
         } else {
             try {
                 byte[] byteArray = record.getBytes(UseLogContract.ENCODING);
                 mBufferedStream.write(byteArray);
                 mBufferedStream.write('\n');
                 if ( LOCAL_LOG ) {
-                    Log.d(TAG, "Wrote record \'" + record + "\' to file: " + mFile);
+                    Log.d(TAG, "To file \'" + mFile + "\' wrote record \'" + record +"\'");
                 }
             } catch (UnsupportedEncodingException e) {
                 // does not recognize UTF-8?
@@ -534,10 +564,24 @@ public class UseLog {
                 case UseLogContract.PRINT_STRING:
                     print(msg.obj);
                     break;
+                case UseLogContract.RELATION_REMOVE_REPEAT:
+                case UseLogContract.RELATION_CREATE_FORM:
+                case UseLogContract.RELATION_DELETE_FORM:
+                case UseLogContract.RELATION_SELF_DESTRUCT:
+                case UseLogContract.RELATION_CHANGE_VALUE:
+                    addToCache(msg);
+                    break;
                 default:
                     Log.w(TAG, Thread.currentThread().getName() +
                             ": Received unknown message code (" + msg.what + ")");
             }
+        }
+
+        void addToCache(Message msg) {
+            int event = msg.what;
+            Object obj = msg.obj;
+            String record = getRecord(event, obj);
+            backLogPushBack(record);
         }
 
         void writeRecord(Message msg) {
@@ -546,7 +590,7 @@ public class UseLog {
             String record = getRecord(event, obj);
             if ( null == mBufferedStream ) {
                 Log.w(TAG, record);
-                mBackLog.add(record);
+                backLogPushBack(record);
                 if ( LOCAL_LOG ) {
                     Log.d(TAG, "Added Message to mBackLog. Current size is " + mBackLog.size());
                 }

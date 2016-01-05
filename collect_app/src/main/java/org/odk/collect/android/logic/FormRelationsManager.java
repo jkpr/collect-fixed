@@ -46,8 +46,8 @@ import org.odk.collect.android.provider.FormsProviderAPI.FormsColumns;
 import org.odk.collect.android.provider.InstanceProviderAPI;
 import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
 import org.odk.collect.android.tasks.FormLoaderTask;
-import org.odk.collect.android.tasks.FormRelationsUseLog;
 import org.odk.collect.android.tasks.SaveToDiskTask;
+import org.odk.collect.android.tasks.UseLog;
 import org.odk.collect.android.tasks.UseLogContract;
 import org.odk.collect.android.utilities.FileUtils;
 import org.w3c.dom.Document;
@@ -139,6 +139,7 @@ public class FormRelationsManager {
     private int mMaxRepeatIndex;
     private ArrayList<TraverseData> mNonRelevantSaveForm;
     private boolean mHasDeleteForm;
+    private static UseLog mUseLog;
 
     public FormRelationsManager() {
         mInstanceId = -1;
@@ -222,6 +223,7 @@ public class FormRelationsManager {
             XPath xpath = XPathFactory.newInstance().newXPath();
             ArrayList<MappingData> mappings = FormRelationsDb.getMappingsToParent(childId);
             boolean editedParentForm = false;
+            mUseLog = new UseLog(parentInstancePath, true);
             for (MappingData mapping : mappings) {
                 XPathExpression parentExpression = xpath.compile(mapping.parentNode);
                 XPathExpression childExpression = xpath.compile(mapping.childNode);
@@ -237,11 +239,8 @@ public class FormRelationsManager {
                 }
 
                 if ( !childNode.getTextContent().equals(parentNode.getTextContent()) ) {
-                    // PMA-Logging BEGIN
-                    // Get mapping.parentNode, get childNode.getTextContent()
-                    // Add to cache
-                    // PMA-Logging END
-
+                    mUseLog.log(UseLogContract.RELATION_CHANGE_VALUE, parentId, mapping.parentNode,
+                            childNode.getTextContent());
 
                     Log.i(TAG, "Found difference updating parent form @ parent node \'" +
                             parentNode.getNodeName() + "\'. Child: \'" +
@@ -254,10 +253,7 @@ public class FormRelationsManager {
 
             if (editedParentForm) {
                 writeDocumentToFile(parentDocument, parentInstancePath);
-                // PMA-Logging BEGIN
-                // rV
-                // Write cache
-                // PMA-Logging END
+                mUseLog.writeBackLogAndClose();
                 ContentValues cv = new ContentValues();
                 cv.put(InstanceColumns.STATUS, InstanceProviderAPI.STATUS_INCOMPLETE);
                 Collect.getInstance().getContentResolver().update(getInstanceUriFromId(parentId),
@@ -410,6 +406,8 @@ public class FormRelationsManager {
         int deleteWhat = getWhatToDelete();
         if ( deleteWhat == DELETE_THIS ) {
             // PMA-Logging BEGIN
+            mUseLog.log(UseLogContract.RELATION_SELF_DESTRUCT, mInstanceId, null, null);
+            mUseLog.writeBackLogAndClose();
 //            try {
 //                // possible racing? writing for value differences, then writing for deletion
 //                long thisParentId = FormRelationsDb.getParent(mInstanceId);
@@ -443,7 +441,8 @@ public class FormRelationsManager {
             }
             for (Long childInstanceId : allWaywardChildren) {
                 // PMA-Logging BEGIN
-                // Get true mInstanceId, write rD to parent log.txt
+                // probably not good to keep track here. log file already being written to in formentry
+                // // Get true mInstanceId, write rD to parent log.txt
                 // PMA-Logging END
                 deleteInstance(childInstanceId);
             }
@@ -528,7 +527,8 @@ public class FormRelationsManager {
                 Uri childInstance = getOrCreateChildForm(saveFormMapping, saveInstanceMapping);
 
                 // Now that we have the URI, the child instance definitely exists. Need to
-                // transfer over values that are different.
+                // transfer over values that are different. mUseLog already initialized for this
+                // child in `getOrCreateChildForm`.
                 hasChild = insertAllIntoChild(saveFormMapping, saveInstanceMapping, childInstance);
             } catch (IOException e) {
                 Log.w(TAG, e.getMessage());
@@ -619,10 +619,12 @@ public class FormRelationsManager {
             }
 
             Uri formUri = getFormUriFromId(formId);
+            // mUseLog initialized later in `createInstance`
             childInstance = createInstance(formUri);
         } else {
             // Get old instance
             childInstance = getInstanceUriFromId(childId);
+            mUseLog = new UseLog(getInstancePath(childInstance), true);
         }
 
         return childInstance;
@@ -757,10 +759,11 @@ public class FormRelationsManager {
         }
 
         exportData(formController);
-        // PMA-Logging BEGIN
-        // create log.txt for this instancePath.
-        // PMA-Logging END
         Uri createdInstance = updateInstanceDatabase(formUri, instancePath);
+        mUseLog = new UseLog(getInstancePath(createdInstance), true);
+        mUseLog.log(UseLogContract.RELATION_CREATE_FORM, getIdFromSingleUri(createdInstance), null,
+                null);
+        mUseLog.writeBackLogAndClose();
         return createdInstance;
     }
 
@@ -920,7 +923,13 @@ public class FormRelationsManager {
                     boolean isThisModified = insertIntoChild(td, document);
                     if (isThisModified) {
                         // PMA-Logging BEGIN
-                        // Build up a cache
+                        if ( null == mUseLog ) {
+                            Log.w(TAG, "Null mUseLog when should be initialized for child(" +
+                                    childId + ")");
+                        } else {
+                            mUseLog.log(UseLogContract.RELATION_CHANGE_VALUE, childId,
+                                    td.attrValue, td.instanceValue);
+                        }
                         // PMA-Logging END
                         checkCopyBinaryFile(td, childInstancePath);
                     }
@@ -942,7 +951,7 @@ public class FormRelationsManager {
                 writeDocumentToFile(document, childInstancePath);
 
                 // PMA-Logging BEGIN
-                // Write the cache
+                mUseLog.writeBackLogAndClose();
                 // PMA-Logging END
 
                 // Set status to incomplete
@@ -1360,6 +1369,26 @@ public class FormRelationsManager {
         String instancePath = childCursor.getString(childCursor.getColumnIndex(
                 InstanceColumns.INSTANCE_FILE_PATH));
         childCursor.close();
+        return instancePath;
+    }
+
+    /**
+     * Gets the instance path from the id number of an instance in the instance provider
+     *
+     * A public static method for other classes to access this functionality.
+     *
+     * @param id Id number of an instance.
+     * @return Returns the path found in the InstanceProvider. If no path is
+     * found, then null is returned
+     */
+    public static String getInstancePath(long id) {
+        String instancePath = null;
+        try {
+            Uri instanceUri = getInstanceUriFromId(id);
+            instancePath = getInstancePath(instanceUri);
+        } catch (FormRelationsException e) {
+            Log.w(TAG, "No instance path found for instanceId(" + id + ")");
+        }
         return instancePath;
     }
 

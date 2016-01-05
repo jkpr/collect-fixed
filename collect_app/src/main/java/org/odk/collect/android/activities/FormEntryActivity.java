@@ -524,7 +524,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		// PMA-Logging: BEGIN
 		mUseLog = new UseLog(instancePath, false);
-		mUseLog.p(t + "::onCreate");
+		// mUseLog.p(t + "::onCreate");
 		// FormController fc = Collect.getInstance().getFormController();
 		// File ip = fc.getInstancePath();
 		// Log.i(t, "Instance path: " + ip.toString());
