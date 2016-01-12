@@ -17,6 +17,7 @@ package org.odk.collect.android.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.text.method.LinkMovementMethod;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.SelectOneData;
@@ -80,9 +81,17 @@ public class SelectOneWidget extends QuestionWidget implements
 
 		if (mItems != null) {
 			for (int i = 0; i < mItems.size(); i++) {
+                String choiceName = prompt.getSelectChoiceText(mItems.get(i));
+                CharSequence choiceDisplayName;
+                if ( choiceName != null ) {
+                  choiceDisplayName = TextUtils.textToHtml(choiceName);
+                } else {
+                  choiceDisplayName = "";
+                }
 				RadioButton r = new RadioButton(getContext());
                 r.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
-                r.setText(TextUtils.fixHtml(prompt.getSelectChoiceText(mItems.get(i))));
+                r.setText(choiceDisplayName);
+				r.setMovementMethod(LinkMovementMethod.getInstance());
 				r.setTag(Integer.valueOf(i));
 				r.setId(QuestionWidget.newUniqueId());
 				r.setEnabled(!prompt.isReadOnly());
@@ -135,10 +144,7 @@ public class SelectOneWidget extends QuestionWidget implements
 		buttonLayout.setOrientation(LinearLayout.VERTICAL);
 
 		// The buttons take up the right half of the screen
-		LayoutParams buttonParams = new LayoutParams(LayoutParams.FILL_PARENT,
-				LayoutParams.WRAP_CONTENT);
-
-		addView(buttonLayout, buttonParams);
+		addAnswerView(buttonLayout);
 	}
 
 	@Override
