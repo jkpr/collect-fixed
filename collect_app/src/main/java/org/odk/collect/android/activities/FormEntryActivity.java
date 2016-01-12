@@ -46,6 +46,8 @@ import org.odk.collect.android.tasks.FormLoaderTask;
 import org.odk.collect.android.tasks.SavePointTask;
 import org.odk.collect.android.tasks.SaveResult;
 import org.odk.collect.android.tasks.SaveToDiskTask;
+import org.odk.collect.android.tasks.UseLog;
+import org.odk.collect.android.tasks.UseLogContract;
 import org.odk.collect.android.utilities.CompatibilityUtils;
 import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.utilities.MediaUtils;
@@ -179,6 +181,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private static final int SAVING_DIALOG = 2;
 	
 	private boolean mAutoSaved;
+
+	// PMA-Log: BEGIN
+	private UseLog mUseLog;
+	// PMA-Log: END
 
 	// Random ID
 	private static final int DELETE_REPEAT = 654321;
@@ -460,6 +466,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 									+ "_";
 							final String fileSuffix = ".xml.save";
 							File cacheDir = new File(Collect.CACHE_PATH);
+							// Searches in the cache dir for files that start with the form
+							// and end with ".xml.save"
 							File[] files = cacheDir.listFiles(new FileFilter() {
 								@Override
 								public boolean accept(File pathname) {
@@ -512,6 +520,14 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				mFormLoaderTask.execute(mFormPath);
 			}
 		}
+
+		// PMA-Logging: BEGIN
+		mUseLog = new UseLog(instancePath, false);
+		// mUseLog.p(t + "::onCreate");
+		// FormController fc = Collect.getInstance().getFormController();
+		// File ip = fc.getInstancePath();
+		// Log.i(t, "Instance path: " + ip.toString());
+		// PMA-Logging: END
 	}
 
     /**
@@ -545,6 +561,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 			// save the instance to a temp path...
 			nonblockingCreateSavePointData();
+			// PMA-Logging BEGIN
+			mUseLog.flush(true);
+			// PMA-Logging END
 		}
 		outState.putBoolean(NEWFORM, false);
 		outState.putString(KEY_ERROR, mErrorMessage);
@@ -713,9 +732,13 @@ public class FormEntryActivity extends Activity implements AnimationListener,
             String bearing = intent.getStringExtra(BEARING_RESULT);
             ((ODKView) mCurrentView).setBinaryData(bearing);
             saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
+			break;
 		case HIERARCHY_ACTIVITY:
 			// We may have jumped to a new index in hierarchy activity, so
 			// refresh
+			// PMA-Logging BEGIN
+			mUseLog.log(UseLogContract.LEAVE_HIERARCHY);
+			// PMA-Logging END
 			break;
 
 		}
@@ -831,8 +854,22 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 					.getActivityLogger()
 					.logInstanceAction(this, "onOptionsItemSelected",
 							"MENU_SAVE");
-			// don't exit
-			saveDataToDisk(DO_NOT_EXIT, isInstanceComplete(false), null);
+			// PMA-Linking BEGIN
+			FormRelationsManager frm = FormRelationsManager.getFormRelationsManager(getIntent().getData(), Collect.getInstance().getFormController().getFormDef().getInstance().getRoot());
+			int whatToDelete = frm.getWhatToDelete();
+			if (whatToDelete == FormRelationsManager.NO_DELETE) {
+				// PMA-Logging BEGIN
+				mUseLog.log(UseLogContract.SAVE_FORM);
+				// PMA-Logging END
+				saveDataToDisk(DO_NOT_EXIT, isInstanceComplete(false), null);
+			} else {
+				createDeleteFormDialog(frm, false, DO_NOT_EXIT, isInstanceComplete(false), null);
+			}
+			// PMA-Linking END
+
+			// Uncomment for old way
+			// // don't exit
+			// saveDataToDisk(DO_NOT_EXIT, isInstanceComplete(false), null);
 			return true;
 		case MENU_HIERARCHY_VIEW:
 			Collect.getInstance()
@@ -842,6 +879,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			if (formController.currentPromptIsQuestion()) {
 				saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			}
+			// PMA-Logging BEGIN
+			mUseLog.log(UseLogContract.ENTER_HIERARCHY);
+			// PMA-Logging END
 			Intent i = new Intent(this, FormHierarchyActivity.class);
 			startActivityForResult(i, HIERARCHY_ACTIVITY);
 			return true;
@@ -873,6 +913,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		if (formController.currentPromptIsQuestion()) {
 			LinkedHashMap<FormIndex, IAnswerData> answers = ((ODKView) mCurrentView)
 					.getAnswers();
+//			// PMA-Logging BEGIN
+//			for (LinkedHashMap.Entry<FormIndex, IAnswerData> entry : answers.entrySet()) {
+//				String xp = formController.getXPath(entry.getKey());
+//				IAnswerData iad = entry.getValue();
+//				if (null != iad) {
+//					String displayText = iad.getDisplayText();
+//					Log.d(t, "Saving current screen, key=\'" + xp + "\' value=\'" + displayText + "\'");
+//				} else {
+//					Log.d(t, "Saving current screen, key=\'" + xp + "\' value=\'" + iad + "\'");
+//				}
+//
+//			}
+//			// PMA-Logging END
             try {
                 FailedConstraint constraint = formController.saveAllScreenAnswers(answers, evaluateConstraints);
                 if (constraint != null) {
@@ -1168,9 +1221,24 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 										R.string.save_as_error,
 										Toast.LENGTH_SHORT).show();
 							} else {
-								saveDataToDisk(EXIT, instanceComplete
-										.isChecked(), saveAs.getText()
-										.toString());
+								// PMA-Logging BEGIN
+								mUseLog.log(UseLogContract.LEAVE_FORM);
+								// PMA-Logging END
+
+								// PMA-Linking BEGIN
+								FormRelationsManager frm = FormRelationsManager.getFormRelationsManager(getIntent().getData(), Collect.getInstance().getFormController().getFormDef().getInstance().getRoot());
+								int whatToDelete = frm.getWhatToDelete();
+								if (whatToDelete == FormRelationsManager.NO_DELETE) {
+									saveDataToDisk(EXIT, instanceComplete.isChecked(), saveAs.getText().toString());
+								} else {
+									createDeleteFormDialog(frm, false, EXIT, instanceComplete.isChecked(), saveAs.getText().toString());
+								}
+								// PMA-Linking END
+
+								// PMA-Linking: Uncomment for the old way
+								// saveDataToDisk(EXIT, instanceComplete
+								// 		.isChecked(), saveAs.getText()
+								// 		.toString());
 							}
 						}
 					});
@@ -1274,11 +1342,21 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                         mBeenSwiped = false;
                         return;
                     }
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLogContract.LEAVE_PROMPT);
+					// PMA-Logging END
 
                     // otherwise, just save without validating (constraints will be validated on finalize)
                 } else
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLogContract.LEAVE_PROMPT);
+					// PMA-Logging END
                     saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
-            }
+				// PMA-Logging BEGIN
+            } else if (formController.getEvent() == FormEntryController.EVENT_BEGINNING_OF_FORM) {
+            	mUseLog.log(UseLogContract.LEAVE_PROMPT);
+				// PMA-Logging END
+			}
 
             View next;
             int event = formController.stepToNextScreenEvent();
@@ -1290,11 +1368,20 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     // create a savepoint
                     if ((++viewCount) % SAVEPOINT_INTERVAL == 0) {
                         nonblockingCreateSavePointData();
+						// PMA-Logging BEGIN
+						mUseLog.flush(true);
+						// PMA-Logging END
                     }
                     next = createView(event, true);
                     showView(next, AnimationType.RIGHT);
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLogContract.ENTER_PROMPT);
+					// PMA-Logging END
                     break;
                 case FormEntryController.EVENT_END_OF_FORM:
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLogContract.FINISH_FORM);
+					// PMA-Logging END
                 case FormEntryController.EVENT_REPEAT:
                     next = createView(event, true);
                     showView(next, AnimationType.RIGHT);
@@ -1325,16 +1412,31 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	 */
 	private void showPreviousView() {
         try {
-            FormController formController = Collect.getInstance()
+			FormController formController = Collect.getInstance()
                     .getFormController();
             // The answer is saved on a back swipe, but question constraints are
             // ignored.
             if (formController.currentPromptIsQuestion()) {
+				// PMA-Logging BEGIN
+//				mUseLog.log(UseLogContract.LEAVE_PROMPT);
+				// PMA-Logging END
                 saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
             }
 
             if (formController.getEvent() != FormEntryController.EVENT_BEGINNING_OF_FORM) {
-                int event = formController.stepToPreviousScreenEvent();
+				// PMA-Logging BEGIN
+                if (formController.getEvent() == FormEntryController.EVENT_END_OF_FORM ||
+						formController.getEvent() == FormEntryController.EVENT_GROUP ||
+						// I do not think I need this. I had this in for removing a repeat and
+						// stepping backwards. So leaving it commented out for now.
+//						formController.getEvent() == FormEntryController.EVENT_REPEAT ||
+//						formController.getEvent() == FormEntryController.EVENT_PROMPT_NEW_REPEAT ||
+						formController.getEvent() == FormEntryController.EVENT_QUESTION) {
+					mUseLog.log(UseLogContract.LEAVE_PROMPT);
+				}
+				// PMA-Logging END
+
+				int event = formController.stepToPreviousScreenEvent();
 
                 if (event == FormEntryController.EVENT_BEGINNING_OF_FORM
                         || event == FormEntryController.EVENT_GROUP
@@ -1342,7 +1444,17 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                     // create savepoint
                     if ((++viewCount) % SAVEPOINT_INTERVAL == 0) {
                         nonblockingCreateSavePointData();
+						// PMA-Logging BEGIN
+						mUseLog.flush(true);
+						// PMA-Logging END
                     }
+					// PMA-Logging BEGIN
+					if (event != FormEntryController.EVENT_BEGINNING_OF_FORM) {
+						mUseLog.log(UseLogContract.ENTER_PROMPT);
+					} else {
+						mUseLog.log(UseLogContract.BEGIN_FORM);
+					}
+					// PMA-Logging END
                 }
                 View next = createView(event, false);
                 showView(next, AnimationType.LEFT);
@@ -1401,8 +1513,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		// drop keyboard before transition...
 		if (mCurrentView != null) {
 			InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-			inputManager.hideSoftInputFromWindow(mCurrentView.getWindowToken(),
-					0);
+			inputManager.hideSoftInputFromWindow(mCurrentView.getWindowToken(), 0);
 		}
 
 		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
@@ -1446,6 +1557,15 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                 || formController.getEvent() == FormEntryController.EVENT_REPEAT) {
             FormEntryPrompt[] prompts = Collect.getInstance().getFormController()
                     .getQuestionPrompts();
+//			//PMA-Logging BEGIN
+//			for (FormEntryPrompt p : prompts) {
+//				String xp = formController.getXPath(p.getIndex());
+//
+//				IAnswerData answer = p.getAnswerValue();
+//				Log.d(t, "Enter \'" + xp + "\' with value \'" + (answer == null ? null : answer.getDisplayText()) + "\'");
+//			}
+//			//PMA-Logging END
+
             for (FormEntryPrompt p : prompts) {
                 List<TreeElement> attrs = p.getBindAttributes();
                 for (int i = 0; i < attrs.size(); i++) {
@@ -1561,6 +1681,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 									"addRepeat");
 					try {
 						formController.newRepeat();
+						// PMA-Logging BEGIN
+						mUseLog.log(UseLogContract.ADD_REPEAT);
+						// PMA-Logging END
 					} catch (Exception e) {
 						FormEntryActivity.this.createErrorDialog(
 								e.getMessage(), DO_NOT_EXIT);
@@ -1710,6 +1833,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 							.getActivityLogger()
 							.logInstanceAction(this,
 									"createDeleteRepeatConfirmDialog", "OK");
+					// PMA-Logging BEGIN
+					mUseLog.log(UseLogContract.REMOVE_REPEAT);
+					// PMA-Logging END
 					formController.deleteRepeat();
 					showPreviousView();
 					break;
@@ -1726,6 +1852,76 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		mAlertDialog.setButton(getString(R.string.discard_group), quitListener);
 		mAlertDialog.setButton2(getString(R.string.delete_repeat_no),
 				quitListener);
+		mAlertDialog.show();
+	}
+
+	/**
+	 * PMA-Linking
+	 * Creates a confirm/cancel dialog for deleting repeats with associated sub-form...
+	 */
+	private void createDeleteFormDialog(FormRelationsManager frm, final boolean isDeleteRepeat, final boolean exit, final boolean complete, final String name) {
+		FormController formController = Collect.getInstance().getFormController();
+		final int repeatIndex = formController.getLastRepeatedGroupRepeatCount() + 1;
+
+		Log.d(t, "createDeleteFormDialog found repeatIndex (" + repeatIndex + ")");
+
+		final long instanceId = frm.getInstanceId();
+		final int whatToDelete = frm.getWhatToDelete();
+		final int howManyToDelete;
+		if (isDeleteRepeat) {
+			howManyToDelete = frm.getHowManyToDelete(repeatIndex);
+		} else {
+			howManyToDelete = frm.getHowManyToDelete();
+		}
+
+		mAlertDialog = new AlertDialog.Builder(this).create();
+		mAlertDialog.setIcon(android.R.drawable.ic_dialog_info);
+
+		mAlertDialog.setTitle(getString(R.string.delete_form));
+		if (whatToDelete == FormRelationsManager.DELETE_THIS) {
+			String text = String.format(getString(R.string.warn_delete_parent_form),
+					getString(R.string.save_delete));
+			mAlertDialog.setMessage(text);
+		} else { // if ( whatToDelete == FormRelationsManager.DELETE_CHILD ) {
+			String text = String.format(getString(R.string.warn_delete_child_form),
+					getString(R.string.save_delete), howManyToDelete);
+			mAlertDialog.setMessage(text);
+		}
+
+		DialogInterface.OnClickListener quitListener = new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int i) {
+					FormController formController = Collect.getInstance().getFormController();
+					switch (i) {
+						case DialogInterface.BUTTON_POSITIVE: // yes
+							if ( isDeleteRepeat ) {
+								FormRelationsManager.manageRepeatDelete(instanceId, repeatIndex);
+								// PMA-Logging BEGIN
+								mUseLog.log(UseLogContract.REMOVE_REPEAT);
+								// PMA-Logging END
+								formController.deleteRepeat();
+								// PMA-Logging BEGIN
+								mUseLog.log(UseLogContract.SAVE_FORM);
+								// PMA-Logging END
+								saveDataToDisk(false, false, name);
+								showPreviousView();
+							} else if ( whatToDelete == FormRelationsManager.DELETE_THIS ) {
+								saveDataToDisk(true, false, name);
+							} else {
+								// PMA-Logging BEGIN
+								mUseLog.log(UseLogContract.SAVE_FORM);
+								// PMA-Logging END
+								saveDataToDisk(exit, complete, name);
+							}
+							break;
+						case DialogInterface.BUTTON_NEGATIVE: // no
+							break;
+					}
+				}
+		};
+		mAlertDialog.setCancelable(false);
+		mAlertDialog.setButton(getString(R.string.save_delete), quitListener);
+		mAlertDialog.setButton2(getString(R.string.cancel), quitListener);
 		mAlertDialog.show();
 	}
 
@@ -1753,6 +1949,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
         }
 
         synchronized (saveDialogLock) {
+			// PMA-Logging BEGIN
+			mUseLog.makeTempPermanent();
+			// PMA-Logging END
             mSaveToDiskTask = new SaveToDiskTask(getIntent().getData(), exit, complete,
                     updatedSaveName);
             mSaveToDiskTask.setFormSavedListener(this);
@@ -1814,24 +2013,48 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 					public void onClick(DialogInterface dialog, int which) {
 						switch (which) {
 
-						case 0: // save and exit
-							// this is slightly complicated because if the
-							// option is disabled in
-							// the admin menu, then case 0 actually becomes
-							// 'discard and exit'
-							// whereas if it's enabled it's 'save and exit'
-							if (mAdminPreferences
-									.getBoolean(
-											AdminPreferencesActivity.KEY_SAVE_MID,
-											true)) {
-								Collect.getInstance()
-										.getActivityLogger()
-										.logInstanceAction(this,
-												"createQuitDialog",
-												"saveAndExit");
-								saveDataToDisk(EXIT, isInstanceComplete(false),
-										null);
-							} else {
+							case 0: // save and exit
+								// this is slightly complicated because if the
+								// option is disabled in
+								// the admin menu, then case 0 actually becomes
+								// 'discard and exit'
+								// whereas if it's enabled it's 'save and exit'
+								if (mAdminPreferences
+										.getBoolean(
+												AdminPreferencesActivity.KEY_SAVE_MID,
+												true)) {
+									Collect.getInstance()
+											.getActivityLogger()
+											.logInstanceAction(this,
+													"createQuitDialog",
+													"saveAndExit");
+									// PMA-Linking BEGIN
+									FormRelationsManager frm = FormRelationsManager.getFormRelationsManager(getIntent().getData(), Collect.getInstance().getFormController().getFormDef().getInstance().getRoot());
+									int whatToDelete = frm.getWhatToDelete();
+									if (whatToDelete == FormRelationsManager.NO_DELETE) {
+										// PMA-Logging BEGIN
+										mUseLog.log(UseLogContract.SAVE_FORM);
+										// PMA-Logging END
+										saveDataToDisk(EXIT, isInstanceComplete(false), null);
+									} else {
+										createDeleteFormDialog(frm, false, EXIT, isInstanceComplete(false), null);
+									}
+									// PMA-Linking END
+
+									// PMA-Linking: Uncomment this for old way
+									// saveDataToDisk(EXIT, isInstanceComplete(false), null);
+								} else {
+									Collect.getInstance()
+											.getActivityLogger()
+											.logInstanceAction(this,
+													"createQuitDialog",
+													"discardAndExit");
+									removeTempInstance();
+									finishReturnInstance();
+								}
+								break;
+
+							case 1: // discard changes and exit
 								Collect.getInstance()
 										.getActivityLogger()
 										.logInstanceAction(this,
@@ -2157,6 +2380,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		FormController formController = Collect.getInstance()
 				.getFormController();
 		dismissDialogs();
+
 		// make sure we're not already saving to disk. if we are, currentPrompt
 		// is getting constantly updated
 		if (mSaveToDiskTask == null
@@ -2170,7 +2394,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		    // stop audio if it's playing
 		    ((ODKView)mCurrentView).stopAudio();
 		}
-		
+
+		// PMA-Logging BEGIN
+		mUseLog.log(UseLogContract.ON_PAUSE);
+		// PMA-Logging END
 
 		super.onPause();
 	}
@@ -2216,6 +2443,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
                 refreshCurrentView();
             }
 		}
+
+		// PMA-Logging BEGIN
+		mUseLog.log(UseLogContract.ON_RESUME);
+		// PMA-Logging END
 
 		if (mSaveToDiskTask != null) {
 			mSaveToDiskTask.setFormSavedListener(this);
@@ -2301,6 +2532,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		super.onDestroy();
 
+		// PMA-LOGGING: BEGIN
+		Log.i(t, "Stopping UseLog thread");
+		mUseLog.close();
+		Log.i(t, "::onDestroy, HandlerThread is alive == " + mUseLog.isAlive());
+		// PMA-LOGGING: END
 	}
 
 	private int mAnimationCompletionSet = 0;
@@ -2417,6 +2653,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			refreshCurrentView();
 			// process the pending activity request...
 			onActivityResult(requestCode, resultCode, intent);
+
+			// PMA-Logging BEGIN
+			// Not certain what needs to happen to get here.
+			mUseLog.log(UseLogContract.UNKNOWN_LOADING_COMPLETE);
+			// PMA-Logging END
 			return;
 		}
 
@@ -2462,13 +2703,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 				// we've just loaded a saved form, so start in the hierarchy
 				// view
 				Intent i = new Intent(this, FormHierarchyActivity.class);
-				startActivity(i);
+				// PMA-Logging: this code runs if there is a save file.
+				mUseLog.log(UseLogContract.ENTER_HIERARCHY);
+				startActivityForResult(i, HIERARCHY_ACTIVITY);
+				// PMA-Logging: uncomment to
+				// startActivity(i);
 				return; // so we don't show the intro screen before jumping to
 						// the hierarchy
 			}
 		}
-
 		refreshCurrentView();
+		// PMA-Logging BEGIN
+		mUseLog.log(UseLogContract.BEGIN_FORM);
+		// PMA-Logging END
 	}
 
 	/**
