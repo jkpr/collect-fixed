@@ -328,10 +328,6 @@
 <string name="no_blank_search">Search field cannot be blank.</string>
 <string name="select_maps_account">You have selected Google Maps Engine as your server, please select a corresponding Google Account in the General Settings before continuing</string>
 <string name="get_project_IDs">Getting Project IDs</string>
-<string name="url_error_whitespace">whitespace is not allowed in urls</string>
-<string name="password_error_whitespace">leading or trailing whitespace not allowed in passwords</string>
-<string name="username_error_whitespace">leading or trailing whitespace not allowed in usernames</string>
-<string name="google_play_services_error_occured">Unable to access Google Maps. Is Google Play Services installed?</string>
 <string name="delete_form">Delete Form</string>
 <string name="warn_delete_child_form">The values entered have invalidated sub-form(s). If you tap \'%1$s\', then %2$d sub-form(s) will be deleted.</string>
 <string name="warn_delete_parent_form">The values entered have invalidated this form. If you tap \'%s\', this form will be deleted and the form entry session will end.</string>
@@ -349,10 +345,9 @@
 <string name="invalid_sheet_id">invalid sheet id: %1$s</string>
 <string name="google_sheets_access_denied">Access denied. Please make sure the spreadsheet owner has granted you access permission.</string>
 <string name="google_sheets_update_error">Error updating spreadsheet. Please make sure the spreadsheet owner has granted you write access permission.</string>
-<string name="google_sheets_missing_columns">Spreadsheet is missing the following columns: %1$s</string>
-    <string name="url_error_whitespace">whitespace is not allowed in urls</string>
-    <string name="password_error_whitespace">leading or trailing whitespace not allowed in passwords</string>
-    <string name="username_error_whitespace">leading or trailing whitespace not allowed in usernames</string>
-    <string name="google_play_services_error_occured">Unable to access Google Maps. Is Google Play Services installed?
-    </string>
+<string name="google_sheets_missing_columns">Spreadsheet is missing the following columns: %1$s</string><string name="url_error_whitespace">whitespace is not allowed in urls</string>
+<string name="password_error_whitespace">leading or trailing whitespace not allowed in passwords</string>
+<string name="username_error_whitespace">leading or trailing whitespace not allowed in usernames</string>
+<string name="google_play_services_error_occured">Unable to access Google Maps. Is Google Play Services installed?
+</string>
 </resources>
