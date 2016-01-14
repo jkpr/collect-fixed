@@ -320,6 +320,12 @@ public class UseLog {
                         d.timeStamp = getTimeStamp();
                         Message m = obtainMessage(event, d);
                         sendMessage(m);
+                    } else if ( event == UseLogContract.ADD_REPEAT ) {
+                        DataContainer data = new DataContainer();
+                        data.timeStamp = getTimeStamp();
+                        data.xpath = formController.getXPath(formController.getFormIndex());
+                        Message m = obtainMessage(event, data);
+                        sendMessage(m);
                     } else {
                         FormEntryPrompt[] prompts = formController.getQuestionPrompts();
                         for (FormEntryPrompt p : prompts) {
