@@ -2102,6 +2102,12 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 		// attempt to remove any scratch file
 		File temp = SaveToDiskTask.savepointFile(formController
 				.getInstancePath());
+		// PMA-Logging BEGIN
+		File tempLog = new File(temp.getAbsolutePath() + ".log");
+		if (tempLog.exists()) {
+			tempLog.delete();
+		}
+		// PMA-Logging END
 		if (temp.exists()) {
 			temp.delete();
 		}

@@ -284,6 +284,8 @@
 <string name="ext_assign_value_error">Cannot assign the value at \'%s\'.</string>
 <string name="fs_delete_media_path_if_file_error">Could not delete \'%s\'. Please delete the file manually and re-download the form.</string>
 <string name="fs_create_media_folder_error">Could not create media folder \'%s\'.</string>
+<string name="fs_create_folder_error">Collect reports: Cannot create directory: %s</string>
+<string name="fs_create_folder_is_file_error">Collect reports: \'%s\' exists, but is not a directory.</string>
 <string name="fs_file_copy_error">Could not copy \'%1$s\' over \'%2$s\'. Reason: %3$s</string>
 <string name="survey_internal_error">Internal error: step to prompt failed.</string>
 <string name="survey_multiple_forms_error">You have downloaded two different forms with the same form ID and version. Maybe they were the same form uploaded at different times or to different servers. In any case, you should delete one.</string>
@@ -297,6 +299,8 @@
 <string name="survey_saving_encrypting_message">Encrypting data…</string>
 <string name="high_resolution_summary">Enable high-resolution video recordings</string>
 <string name="high_resolution">Enable hi-res video</string>
+<string name="server_platform_google_maps_engine">Google Drive, Google Maps Engine</string>
+<string name="gme_project_id">Project ID</string>
 <string name="server_platform_google_sheets">Google Drive, Google Sheets</string>
 <string name="google_drive">Google Drive</string>
 <string name="go_drive">My Drive</string>
@@ -322,6 +326,17 @@
 <string name="change_server_url">Server URL</string>
 <string name="google_search_browse">Search for forms. Or select \'My Drive\' below to browse.</string>
 <string name="no_blank_search">Search field cannot be blank.</string>
+<string name="select_maps_account">You have selected Google Maps Engine as your server, please select a corresponding Google Account in the General Settings before continuing</string>
+<string name="get_project_IDs">Getting Project IDs</string>
+<string name="delete_form">Delete Form</string>
+<string name="warn_delete_child_form">The values entered have invalidated sub-form(s). If you tap \'%1$s\', then %2$d sub-form(s) will be deleted.</string>
+<string name="warn_delete_parent_form">The values entered have invalidated this form. If you tap \'%s\', this form will be deleted and the form entry session will end.</string>
+<string name="save_delete">Save and Delete</string>
+<string name="data_manager_delete">Warning: You have selected one or more forms with related instances. Related forms will be modified or deleted if you select \'%s\'.</string>
+<string name="finalize_parent_form">Parent form has not been marked complete. Please finalize parent form before sending.</string>
+<string name="finalize_sub_form">Not all sub-forms have been marked complete. Please finalize all related sub-forms before sending.</string>
+<string name="no_related_forms">No related sub-forms to display</string>
+<string name="no_editing_sub_forms">A related form has already been submitted. Editing related forms is now prohibited.</string>
 <string name="google_sheets_url">Google Sheets URL</string>
 <string name="default_google_sheets_url"></string>
 <string name="send_in_progress">Background send running, please try again shortly</string>
@@ -330,10 +345,9 @@
 <string name="invalid_sheet_id">invalid sheet id: %1$s</string>
 <string name="google_sheets_access_denied">Access denied. Please make sure the spreadsheet owner has granted you access permission.</string>
 <string name="google_sheets_update_error">Error updating spreadsheet. Please make sure the spreadsheet owner has granted you write access permission.</string>
-<string name="google_sheets_missing_columns">Spreadsheet is missing the following columns: %1$s</string>
-    <string name="url_error_whitespace">whitespace is not allowed in urls</string>
-    <string name="password_error_whitespace">leading or trailing whitespace not allowed in passwords</string>
-    <string name="username_error_whitespace">leading or trailing whitespace not allowed in usernames</string>
-    <string name="google_play_services_error_occured">Unable to access Google Maps. Is Google Play Services installed?
-    </string>
+<string name="google_sheets_missing_columns">Spreadsheet is missing the following columns: %1$s</string><string name="url_error_whitespace">whitespace is not allowed in urls</string>
+<string name="password_error_whitespace">leading or trailing whitespace not allowed in passwords</string>
+<string name="username_error_whitespace">leading or trailing whitespace not allowed in usernames</string>
+<string name="google_play_services_error_occured">Unable to access Google Maps. Is Google Play Services installed?
+</string>
 </resources>

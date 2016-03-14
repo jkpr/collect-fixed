@@ -695,7 +695,10 @@ public class FormDownloadList extends ListActivity implements FormListDownloader
                     mFormList.add(j, item);
                 }
             }
-            selectSupersededForms();
+            // PMA2020 BEGIN
+            // Hannah does not like this, so it is being commented out.
+            // selectSupersededForms();
+            // PMA2020 END
             mFormListAdapter.notifyDataSetChanged();
             mDownloadButton.setEnabled(!(selectedItemCount() == 0));
         }
