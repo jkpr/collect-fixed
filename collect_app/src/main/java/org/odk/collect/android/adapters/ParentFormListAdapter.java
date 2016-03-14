@@ -45,7 +45,7 @@ import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
  * Creator: James K. Pringle
  * Email: jpringle@jhu.edu
  * Created: 4 September 2015
- * Last modified: 9 September 2015
+ * Last modified: 14 March 2016
  */
 public class ParentFormListAdapter extends SimpleCursorAdapter {
 
@@ -65,6 +65,10 @@ public class ParentFormListAdapter extends SimpleCursorAdapter {
             TextView t = (TextView) view.findViewById(R.id.text2);
 
             StringBuilder sb = new StringBuilder();
+            sb.append(InstanceColumns._ID + " = " + id);
+            if (children.length > 0) {
+                sb.append(" OR ");
+            }
             for (int i = 0; i < children.length; i++) {
                 sb.append(InstanceColumns._ID + " = " + children[i]);
                 if (i != children.length - 1) {
@@ -85,8 +89,9 @@ public class ParentFormListAdapter extends SimpleCursorAdapter {
             Cursor c = context.getContentResolver().query(InstanceColumns.CONTENT_URI, null,
                     selection, selectionArgs, sortOrder);
             int count = c.getCount();
+            int outOf = children.length + 1;
             c.close();
-            t.setText("Completed: " + count + "/" + children.length);
+            t.setText("Completed: " + count + "/" + outOf);
         }
     }
 
