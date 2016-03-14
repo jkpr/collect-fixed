@@ -135,9 +135,8 @@ public class SaveToDiskTask extends AsyncTask<Void, String, SaveResult> {
          *  Must update parent first (transfer correct values) because manageChildForms
          *  deletes if deleteForm is relevant.
          */
-            Long instanceId = Long.valueOf(mUri.getLastPathSegment());
             TreeElement instanceRoot = formController.getFormDef().getInstance().getRoot();
-            FormRelationsManager.manageFormRelations(instanceId, instanceRoot);
+            FormRelationsManager.manageFormRelations(mUri, instanceRoot);
             // PMA-Linking END
 
 
