@@ -102,7 +102,7 @@ import javax.xml.xpath.XPathFactory;
  * Creator: James K. Pringle
  * E-mail: jpringle@jhu.edu
  * Created: 20 August 2015
- * Last modified: 10 September 2015
+ * Last modified: 14 March 2016
  */
 public class FormRelationsManager {
 
@@ -149,8 +149,8 @@ public class FormRelationsManager {
         mHasDeleteForm = false;
     }
 
-    public FormRelationsManager(long parentId) {
-        mInstanceId = parentId;
+    public FormRelationsManager(long instanceId) {
+        mInstanceId = instanceId;
         mAllTraverseData = new ArrayList<TraverseData>();
         mMaxRepeatIndex = 0;
         mNonRelevantSaveForm = new ArrayList<TraverseData>();
@@ -177,10 +177,11 @@ public class FormRelationsManager {
      * up-to-date, all paired nodes between parent and child forms should be
      * synced, and all relevant deletions should have taken place.
      *
-     * @param instanceId Instance id of the current survey.
+     * @param uri Uri of the current survey, be it a form or instance uri.
      * @param instanceRoot Root of the JavaRosa tree built during the survey.
      */
-    public static void manageFormRelations(long instanceId, TreeElement instanceRoot) {
+    public static void manageFormRelations(Uri uri, TreeElement instanceRoot) {
+        long instanceId = getIdFromSingleUri(uri);
         manageParentForm(instanceId);
         FormRelationsManager frm = getFormRelationsManager(instanceId, instanceRoot);
         frm.outputOrUpdateChildForms();
@@ -1255,7 +1256,8 @@ public class FormRelationsManager {
                 .equals(InstanceColumns.CONTENT_ITEM_TYPE)) {
             String idStr = instance.getLastPathSegment();
             id = Long.parseLong(idStr);
-        } else { // if uri is for a form
+        } else if (Collect.getInstance().getContentResolver().getType(instance)
+                .equals(FormsColumns.CONTENT_ITEM_TYPE)) { // if uri is for a form
             // first try to find by looking up absolute path
             FormController formController = Collect.getInstance().getFormController();
             String[] projection = {
