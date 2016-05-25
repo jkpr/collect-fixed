@@ -51,6 +51,7 @@ import org.odk.collect.android.tasks.UseLog;
 import org.odk.collect.android.tasks.UseLogContract;
 import org.odk.collect.android.utilities.CompatibilityUtils;
 import org.odk.collect.android.utilities.FileUtils;
+import org.odk.collect.android.utilities.ImageScaler;
 import org.odk.collect.android.utilities.MediaUtils;
 import org.odk.collect.android.views.ODKView;
 import org.odk.collect.android.widgets.QuestionWidget;
@@ -643,6 +644,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			 */
 			// The intent is empty, but we know we saved the image to the temp
 			// file
+			// PMA-Photo BEGIN
+			String mInstanceFolder = formController.getInstancePath()
+					.getParent();
+			String out = mInstanceFolder + File.separator
+					+ System.currentTimeMillis() + ".jpg";
+
+			int SCALED_WIDTH = 600;
+			ImageScaler.resize(Collect.TMPFILE_PATH, out, SCALED_WIDTH);
+			((ODKView) mCurrentView).setBinaryData(new File(out));
+			// PMA-Photo END
+
+			// PMA uncomment below to get original
+			/*
 			File fi = new File(Collect.TMPFILE_PATH);
 			String mInstanceFolder = formController.getInstancePath()
 					.getParent();
@@ -657,8 +671,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 						"renamed " + fi.getAbsolutePath() + " to "
 								+ nf.getAbsolutePath());
 			}
-
 			((ODKView) mCurrentView).setBinaryData(nf);
+			*/
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
 		case ALIGNED_IMAGE:
@@ -669,6 +683,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			 */
 			String path = intent
 					.getStringExtra(android.provider.MediaStore.EXTRA_OUTPUT);
+			// PMA-Photo BEGIN
+			mInstanceFolder = formController.getInstancePath()
+					.getParent();
+			out = mInstanceFolder + File.separator
+					+ System.currentTimeMillis() + ".jpg";
+
+			SCALED_WIDTH = 600;
+			ImageScaler.resize(path, out, SCALED_WIDTH);
+			((ODKView) mCurrentView).setBinaryData(new File(out));
+			// PMA-Photo END
+
+			// PMA uncomment below to go back to original
+			/*
 			fi = new File(path);
 			mInstanceFolder = formController.getInstancePath().getParent();
 			s = mInstanceFolder + File.separator + System.currentTimeMillis()
@@ -684,6 +711,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 
 			((ODKView) mCurrentView).setBinaryData(nf);
+			*/
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
 		case IMAGE_CHOOSER:
@@ -705,11 +733,20 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			String destImagePath = mInstanceFolder1 + File.separator
 					+ System.currentTimeMillis() + ".jpg";
 
+			// PMA-Photo BEGIN
+			SCALED_WIDTH = 600;
+			ImageScaler.resize(sourceImagePath, destImagePath, SCALED_WIDTH);
+			((ODKView) mCurrentView).setBinaryData(new File(destImagePath));
+			// PMA-Photo END
+
+			// PMA uncomment below to go back to original
+			/*
 			File source = new File(sourceImagePath);
 			File newImage = new File(destImagePath);
 			FileUtils.copyFile(source, newImage);
 
 			((ODKView) mCurrentView).setBinaryData(newImage);
+			*/
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
 		case AUDIO_CAPTURE:
