@@ -134,6 +134,10 @@ public class FormRelationsManager {
     private static final String SAVE_FORM = "saveForm";
     private static final String DELETE_FORM = "deleteForm";
 
+    // Public error codes
+    public static final int CODE_NO_SUBFORM = -1;
+    public static final int CODE_NO_XPATH = -2;
+
     private long mInstanceId;
     private ArrayList<TraverseData> mAllTraverseData;
     private int mMaxRepeatIndex;
@@ -179,13 +183,32 @@ public class FormRelationsManager {
      *
      * @param uri Uri of the current survey, be it a form or instance uri.
      * @param instanceRoot Root of the JavaRosa tree built during the survey.
+     * @return Returns number of other forms updated, or error code if linking
+     * error
      */
-    public static void manageFormRelations(Uri uri, TreeElement instanceRoot) {
+    public static int manageFormRelations(Uri uri, TreeElement instanceRoot) {
         long instanceId = getIdFromSingleUri(uri);
-        manageParentForm(instanceId);
+        int parentCode = manageParentForm(instanceId);
         FormRelationsManager frm = getFormRelationsManager(instanceId, instanceRoot);
-        frm.outputOrUpdateChildForms();
-        frm.manageDeletions();
+        int childCode = frm.outputOrUpdateChildForms();
+        int deleteCode = frm.manageDeletions();
+
+        int returnCode = 0;
+        if (parentCode >= 0) {
+            returnCode += parentCode;
+        }
+        if (childCode >= 0) {
+            returnCode += childCode;
+        }
+        if (deleteCode >= 0) {
+            returnCode += deleteCode;
+        }
+
+        // Currently (May 2016), childCode is the only thing that can have an error
+        if (childCode < 0) {
+            returnCode = childCode;
+        }
+        return returnCode;
     }
 
     /**
@@ -203,16 +226,19 @@ public class FormRelationsManager {
      * incomplete.
      *
      * @param childId Instance id
-     * @return Returns true if and only if there is a parent form.
+     * @return Returns -1 if no parent, 0 if has parent, but no updates, 1 if
+     * has parent and updates made.
      */
-    private static boolean manageParentForm(long childId) {
+    private static int manageParentForm(long childId) {
         Long parentId = FormRelationsDb.getParent(childId);
         if (LOCAL_LOG) {
             Log.d(TAG, "Inside manageParentForm. Parent instance id is \'" + parentId + "\'");
         }
         if (parentId < 0) { // No parent form to manage
-            return false;
+            return -1;
         }
+
+        int returnCode = 0;
 
         try {
             String parentInstancePath = getInstancePath(getInstanceUriFromId(parentId));
@@ -259,6 +285,7 @@ public class FormRelationsManager {
                 cv.put(InstanceColumns.STATUS, InstanceProviderAPI.STATUS_INCOMPLETE);
                 Collect.getInstance().getContentResolver().update(getInstanceUriFromId(parentId),
                         cv, null, null);
+                returnCode = 1;
             }
         } catch (FormRelationsException e) {
             if (e.getErrorCode() == PROVIDER_NO_INSTANCE) {
@@ -283,7 +310,7 @@ public class FormRelationsManager {
             e.printStackTrace();
         }
 
-        return true;
+        return returnCode;
     }
 
     /**
@@ -402,8 +429,11 @@ public class FormRelationsManager {
      * InstanceProvider and from the form relations database. If an irrelevant
      * saveForm is discovered and it is associated with a child, then that
      * child is deleted. In this second case, the parent form is unmodified.
+     *
+     * @return The number of forms deleted is returned.
      */
-    private void manageDeletions() {
+    private int manageDeletions() {
+        int nDeletions = 0;
         int deleteWhat = getWhatToDelete();
         if ( deleteWhat == DELETE_THIS ) {
             // PMA-Logging BEGIN
@@ -423,7 +453,7 @@ public class FormRelationsManager {
 //                Log.w(TAG, "Failed to log self-deletion", e);
 //            }
             // PMA-Logging END
-            deleteInstance(mInstanceId);
+            nDeletions = deleteInstance(mInstanceId);
         } else if ( deleteWhat == DELETE_CHILD ) {
             TreeSet<Integer> allRepeatIndices = new TreeSet<Integer>();
             for (TraverseData td : mNonRelevantSaveForm) {
@@ -447,7 +477,9 @@ public class FormRelationsManager {
                 // PMA-Logging END
                 deleteInstance(childInstanceId);
             }
+            nDeletions = allWaywardChildren.size();
         }
+        return nDeletions;
     }
 
     /**
@@ -486,14 +518,17 @@ public class FormRelationsManager {
      * finish off transferring parent information to the child. Raised
      * exceptions abort the process.
      *
-     * @return Returns true if and only if there is a child form associated
-     * with this instance.
+     * @return Returns number of child forms that are modified ( >= 0) or an
+     * error code.
      */
-    private boolean outputOrUpdateChildForms() {
-        boolean hasChild = false;
+    private int outputOrUpdateChildForms() {
         if (mHasDeleteForm) { // Children to be deleted. Just return.
-            return hasChild;
+            // Counting happens later.
+            return 0;
         }
+
+        int returnCode = 0;
+        int nModifiedChildren = 0;
 
         for (int i = 1; i <= mMaxRepeatIndex; i++ ) {
             ArrayList<TraverseData> saveFormMapping = new ArrayList<TraverseData>();
@@ -530,7 +565,11 @@ public class FormRelationsManager {
                 // Now that we have the URI, the child instance definitely exists. Need to
                 // transfer over values that are different. mUseLog already initialized for this
                 // child in `getOrCreateChildForm`.
-                hasChild = insertAllIntoChild(saveFormMapping, saveInstanceMapping, childInstance);
+                boolean isChildModified = insertAllIntoChild(saveFormMapping, saveInstanceMapping,
+                                                             childInstance);
+                if (isChildModified) {
+                    nModifiedChildren++;
+                }
             } catch (IOException e) {
                 Log.w(TAG, e.getMessage());
                 e.printStackTrace();
@@ -543,8 +582,12 @@ public class FormRelationsManager {
                     case NO_ERROR_CODE:
                         break;
                     case PROVIDER_NO_FORM:
+                        returnCode = CODE_NO_SUBFORM;
                         msg = "No form with id \'" + e.getInfo() + "\' in FormProvider for " +
                                 "repeat (" + i +")";
+                        break;
+                    case BAD_XPATH_INSTANCE:
+                        returnCode = CODE_NO_XPATH;
                         break;
                     case NO_INSTANCE_NO_FORM:
                         msg = "No child form exists, impossible to create one, no saveForm " +
@@ -565,7 +608,7 @@ public class FormRelationsManager {
             }
         }
 
-        return hasChild;
+        return returnCode < 0 ? returnCode : nModifiedChildren;
     }
 
     /**
@@ -852,8 +895,9 @@ public class FormRelationsManager {
      * InstanceProvider, etc.
      *
      * @param instanceId The id of the instance to be deleted.
+     * @return The number of instances that are deleted, including this one.
      */
-    public static void deleteInstance(long instanceId) {
+    public static int deleteInstance(long instanceId) {
         if (LOCAL_LOG) {
             Log.d(TAG, "### deleteInstance(" + instanceId + ")");
         }
@@ -868,6 +912,7 @@ public class FormRelationsManager {
             Uri childInstance = getInstanceUriFromId(instanceId);
             Collect.getInstance().getContentResolver().delete(childInstance, null, null);
         }
+        return childrenIds.length + 1;
     }
 
     /**
@@ -889,14 +934,14 @@ public class FormRelationsManager {
      * @param saveInstanceMapping All `saveInstance` information gathered from
      *                            traversal, filtered for this child.
      * @param childInstance The Uri for the child instance
-     * @return Returns true if and only if a child is proven to exist.
+     * @return Returns true if and only if a child is updated.
      * @throws FormRelationsException This exception is propagated to the
      * calling method.
      */
     private boolean insertAllIntoChild(ArrayList<TraverseData> saveFormMapping,
                                     ArrayList<TraverseData> saveInstanceMapping,
                                     Uri childInstance) throws FormRelationsException {
-        boolean hasChild = false;
+        boolean isInstanceModified = false;
 
         String childInstancePath = getInstancePath(childInstance);
 
@@ -918,7 +963,6 @@ public class FormRelationsManager {
 
             int repeatIndex = getRepeatIndex(saveFormMapping, saveInstanceMapping);
             long childId = getIdFromSingleUri(childInstance);
-            boolean isInstanceModified = false;
             for (TraverseData td : saveInstanceMapping) {
                 try {
                     boolean isThisModified = insertIntoChild(td, document);
@@ -935,11 +979,11 @@ public class FormRelationsManager {
                         checkCopyBinaryFile(td, childInstancePath);
                     }
                     isInstanceModified = isInstanceModified || isThisModified;
-                    hasChild = true;
                 } catch (FormRelationsException e) {
                     if (e.getErrorCode() == BAD_XPATH_INSTANCE) {
                         Log.w(TAG, "Unable to insert value \'" + td.instanceValue +
                                 "\' into child at " + e.getInfo());
+                        throw e;
                     }
                 }
 
@@ -983,7 +1027,7 @@ public class FormRelationsManager {
             e.printStackTrace();
         }
 
-        return hasChild;
+        return isInstanceModified;
     }
 
     /**

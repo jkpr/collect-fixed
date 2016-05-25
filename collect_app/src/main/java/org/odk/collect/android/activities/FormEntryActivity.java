@@ -851,6 +851,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			createLanguageDialog();
 			return true;
 		case MENU_SAVE:
+			// PMA-Linking BEGIN
+			// Must get current values from the screen to check for child deletions
+			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
+			// PMA-Linking END
 			Collect.getInstance()
 					.getActivityLogger()
 					.logInstanceAction(this, "onOptionsItemSelected",
@@ -2788,6 +2792,27 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			else
 				saveAnswersForCurrentScreen(EVALUATE_CONSTRAINTS);
 
+			break;
+		case SaveToDiskTask.FORM_RELATIONS_RESULT:
+			boolean thisSaveExit = false;
+			int frmReturnCode = Integer.parseInt(saveResult.getSaveErrorMessage());
+			if (frmReturnCode > 1000) {
+				frmReturnCode -= SaveToDiskTask.FRM_EXIT_OFFSET;
+				thisSaveExit = true;
+			}
+			String msg = getString(R.string.data_saved_ok) + " (from FRM)";
+			if (frmReturnCode > 0) {
+				msg = getString(R.string.others_updated_on_save, frmReturnCode);
+			} else if (frmReturnCode == FormRelationsManager.CODE_NO_SUBFORM) {
+				msg = getString(R.string.bad_form_id_on_save);
+			} else if (frmReturnCode == FormRelationsManager.CODE_NO_XPATH) {
+				msg = getString(R.string.bad_xpath_on_save);
+			}
+			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+			sendSavedBroadcast();
+			if (thisSaveExit) {
+				finishReturnInstance();
+			}
 			break;
 		}
 	}

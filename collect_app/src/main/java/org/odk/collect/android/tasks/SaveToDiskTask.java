@@ -62,6 +62,10 @@ public class SaveToDiskTask extends AsyncTask<Void, String, SaveResult> {
     public static final int VALIDATE_ERROR = 502;
     public static final int VALIDATED = 503;
     public static final int SAVED_AND_EXIT = 504;
+    // PMA-Linking BEGIN
+    public static final int FORM_RELATIONS_RESULT = 505;
+    public static final int FRM_EXIT_OFFSET = 10000;
+    // PMA-Linking END
 
 
     public SaveToDiskTask(Uri uri, Boolean saveAndExit, Boolean markCompleted, String updatedName) {
@@ -136,7 +140,7 @@ public class SaveToDiskTask extends AsyncTask<Void, String, SaveResult> {
          *  deletes if deleteForm is relevant.
          */
             TreeElement instanceRoot = formController.getFormDef().getInstance().getRoot();
-            FormRelationsManager.manageFormRelations(mUri, instanceRoot);
+            int returnCode = FormRelationsManager.manageFormRelations(mUri, instanceRoot);
             // PMA-Linking END
 
 
@@ -146,7 +150,19 @@ public class SaveToDiskTask extends AsyncTask<Void, String, SaveResult> {
                 FileUtils.deleteAndReport(shadowInstance);
             }
 
-            saveResult.setSaveResult(mSave ? SAVED_AND_EXIT : SAVED);
+            // PMA-Linking BEGIN
+            if (returnCode != 0) {
+                saveResult.setSaveResult(FORM_RELATIONS_RESULT);
+                if (mSave) {
+                    returnCode += FRM_EXIT_OFFSET;
+                }
+                saveResult.setSaveErrorMessage(String.valueOf(returnCode));
+
+            } else {
+                saveResult.setSaveResult(mSave ? SAVED_AND_EXIT : SAVED);
+            }
+            // PMA-Linking END (old way below)
+            //saveResult.setSaveResult(mSave ? SAVED_AND_EXIT : SAVED);
         } catch (Exception e) {
             Log.e(t, e.getMessage(), e);
 
