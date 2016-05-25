@@ -63,8 +63,7 @@ public class ImageScaler {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(out);
-            bm.compress(Bitmap.CompressFormat.JPEG, IMAGE_COMPRESSION, fos); // bmp is your Bitmap instance
-            // PNG is a lossless format, the compression factor (100) is ignored
+            bm.compress(Bitmap.CompressFormat.JPEG, IMAGE_COMPRESSION, fos);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
