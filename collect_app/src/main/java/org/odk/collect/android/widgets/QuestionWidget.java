@@ -123,7 +123,10 @@ public abstract class QuestionWidget extends RelativeLayout implements AudioPlay
         questionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
         questionText.setTypeface(null, Typeface.BOLD);
         questionText.setPadding(0, 0, 0, 7);
-        questionText.setText(promptText == null ? "" : TextUtils.textToHtml(promptText));
+        // PMA BEGIN
+        questionText.setText(promptText == null ? "" : promptText);
+        // PMA END (uncomment below to get back original
+        // questionText.setText(promptText == null ? "" : TextUtils.textToHtml(promptText));
 
         // Wrap to the size of the parent view
         questionText.setHorizontallyScrolling(false);
