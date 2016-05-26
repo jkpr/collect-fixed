@@ -36,7 +36,7 @@ public class UseLogContract {
     protected static final boolean THIN_XPATH = true;
 
     protected static final String USE_LOG_NAME = "log.txt";
-    protected static final String LOG_VERSION = "v0.1";
+    protected static final String LOG_VERSION = "v0.2";
     protected static final String ENCODING = "UTF-8";
 
     // UseLog Events: initialization
