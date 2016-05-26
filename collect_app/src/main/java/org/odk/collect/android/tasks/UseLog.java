@@ -53,7 +53,7 @@ import java.util.List;
  * Creator: James K. Pringle
  * E-mail: jpringle@jhu.edu
  * Created: 17 September 2015
- * Last modified: 29 December 2015
+ * Last modified: 26 May 2016
  */
 public class UseLog {
     private static final String TAG = UseLog.class.getSimpleName();
@@ -327,9 +327,9 @@ public class UseLog {
                         Message m = obtainMessage(event, data);
                         sendMessage(m);
                     } else {
+                        String timeStamp = getTimeStamp();
                         FormEntryPrompt[] prompts = formController.getQuestionPrompts();
                         for (FormEntryPrompt p : prompts) {
-                            String timeStamp = getTimeStamp();
                             String xpath = formController.getXPath(p.getIndex());
                             IAnswerData answer = p.getAnswerValue();
                             String text = answer == null ? "" : answer.getDisplayText();
