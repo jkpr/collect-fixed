@@ -28,12 +28,13 @@ package org.odk.collect.android.exception;
  *
  *  Creator: James K. Pringle
  *  E-mail: jpringle@jhu.edu
- *  Last modified: 25 August 2015
+ *  Created: 25 August 2015
+ *  Last modified: 26 May 2016
  */
 public class FormRelationsException extends Exception {
 
-    private final int ERROR_CODE;
-    private final String INFO;
+    private int ERROR_CODE;
+    private String INFO;
 
     public FormRelationsException() {
         super();
@@ -61,6 +62,10 @@ public class FormRelationsException extends Exception {
 
     public int getErrorCode() {
         return ERROR_CODE;
+    }
+
+    public void setInfo(String info) {
+        INFO = info;
     }
 
     public String getInfo() {

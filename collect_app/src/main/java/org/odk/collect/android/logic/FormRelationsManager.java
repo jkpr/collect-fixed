@@ -102,7 +102,7 @@ import javax.xml.xpath.XPathFactory;
  * Creator: James K. Pringle
  * E-mail: jpringle@jhu.edu
  * Created: 20 August 2015
- * Last modified: 25 May 2016
+ * Last modified: 26 May 2016
  */
 public class FormRelationsManager {
 
@@ -587,6 +587,8 @@ public class FormRelationsManager {
                                 "repeat (" + i +")";
                         break;
                     case BAD_XPATH_INSTANCE:
+                        long instanceId = Long.parseLong(e.getInfo());
+                        deleteInstance(instanceId);
                         returnCode = CODE_NO_XPATH;
                         break;
                     case NO_INSTANCE_NO_FORM:
@@ -895,7 +897,7 @@ public class FormRelationsManager {
      * InstanceProvider, etc.
      *
      * @param instanceId The id of the instance to be deleted.
-     * @return The number of instances that are deleted, including this one.
+     * @return The number of instances that are deleted, excluding this one.
      */
     public static int deleteInstance(long instanceId) {
         if (LOCAL_LOG) {
@@ -912,7 +914,7 @@ public class FormRelationsManager {
             Uri childInstance = getInstanceUriFromId(instanceId);
             Collect.getInstance().getContentResolver().delete(childInstance, null, null);
         }
-        return childrenIds.length + 1;
+        return childrenIds.length;
     }
 
     /**
@@ -983,6 +985,7 @@ public class FormRelationsManager {
                     if (e.getErrorCode() == BAD_XPATH_INSTANCE) {
                         Log.w(TAG, "Unable to insert value \'" + td.instanceValue +
                                 "\' into child at " + e.getInfo());
+                        e.setInfo(String.valueOf(childId));
                         throw e;
                     }
                 }
