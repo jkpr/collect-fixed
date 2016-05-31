@@ -33,7 +33,7 @@
   <string name="data">محفوظ شدہ فارم</string>
   <string name="data_saved_error">معافی, فارم محفوظ نہیں ہوسکا</string>
   <string name="data_saved_ok">فارم کامیابی سے محفوظ کیا گیا</string>
-  <string name="save_point_error">ریکوری پوانٹ سیو کرتے وقت خرابی: %s</string>
+  <string name="save_point_error">ریکوری پوانٹ سیو کرتے وقت خرابی (‎%s‏)</string>
   <string name="default_completed">حتمی کیا گیا زیر استعمال</string>
   <string name="default_completed_summary">فارم کو (default) مکمل بنا دیں</string>
   <string name="delete_confirm">‎%s‏ فارم کو مٹا دیں</string>

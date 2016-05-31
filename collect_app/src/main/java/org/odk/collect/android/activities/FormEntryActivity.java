@@ -51,6 +51,7 @@ import org.odk.collect.android.tasks.UseLog;
 import org.odk.collect.android.tasks.UseLogContract;
 import org.odk.collect.android.utilities.CompatibilityUtils;
 import org.odk.collect.android.utilities.FileUtils;
+import org.odk.collect.android.utilities.ImageScaler;
 import org.odk.collect.android.utilities.MediaUtils;
 import org.odk.collect.android.views.ODKView;
 import org.odk.collect.android.widgets.QuestionWidget;
@@ -643,6 +644,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			 */
 			// The intent is empty, but we know we saved the image to the temp
 			// file
+			// PMA-Photo BEGIN
+			String mInstanceFolder = formController.getInstancePath()
+					.getParent();
+			String out = mInstanceFolder + File.separator
+					+ System.currentTimeMillis() + ".jpg";
+
+			int SCALED_WIDTH = 600;
+			ImageScaler.resize(Collect.TMPFILE_PATH, out, SCALED_WIDTH);
+			((ODKView) mCurrentView).setBinaryData(new File(out));
+			// PMA-Photo END
+
+			// PMA uncomment below to get original
+			/*
 			File fi = new File(Collect.TMPFILE_PATH);
 			String mInstanceFolder = formController.getInstancePath()
 					.getParent();
@@ -657,8 +671,8 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 						"renamed " + fi.getAbsolutePath() + " to "
 								+ nf.getAbsolutePath());
 			}
-
 			((ODKView) mCurrentView).setBinaryData(nf);
+			*/
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
 		case ALIGNED_IMAGE:
@@ -669,6 +683,19 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			 */
 			String path = intent
 					.getStringExtra(android.provider.MediaStore.EXTRA_OUTPUT);
+			// PMA-Photo BEGIN
+			mInstanceFolder = formController.getInstancePath()
+					.getParent();
+			out = mInstanceFolder + File.separator
+					+ System.currentTimeMillis() + ".jpg";
+
+			SCALED_WIDTH = 600;
+			ImageScaler.resize(path, out, SCALED_WIDTH);
+			((ODKView) mCurrentView).setBinaryData(new File(out));
+			// PMA-Photo END
+
+			// PMA uncomment below to go back to original
+			/*
 			fi = new File(path);
 			mInstanceFolder = formController.getInstancePath().getParent();
 			s = mInstanceFolder + File.separator + System.currentTimeMillis()
@@ -684,6 +711,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			}
 
 			((ODKView) mCurrentView).setBinaryData(nf);
+			*/
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
 		case IMAGE_CHOOSER:
@@ -705,11 +733,20 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			String destImagePath = mInstanceFolder1 + File.separator
 					+ System.currentTimeMillis() + ".jpg";
 
+			// PMA-Photo BEGIN
+			SCALED_WIDTH = 600;
+			ImageScaler.resize(sourceImagePath, destImagePath, SCALED_WIDTH);
+			((ODKView) mCurrentView).setBinaryData(new File(destImagePath));
+			// PMA-Photo END
+
+			// PMA uncomment below to go back to original
+			/*
 			File source = new File(sourceImagePath);
 			File newImage = new File(destImagePath);
 			FileUtils.copyFile(source, newImage);
 
 			((ODKView) mCurrentView).setBinaryData(newImage);
+			*/
 			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			break;
 		case AUDIO_CAPTURE:
@@ -851,6 +888,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			createLanguageDialog();
 			return true;
 		case MENU_SAVE:
+			// PMA-Linking BEGIN
+			// Must get current values from the screen to check for child deletions
+			saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
+			// PMA-Linking END
 			Collect.getInstance()
 					.getActivityLogger()
 					.logInstanceAction(this, "onOptionsItemSelected",
@@ -2788,6 +2829,27 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			else
 				saveAnswersForCurrentScreen(EVALUATE_CONSTRAINTS);
 
+			break;
+		case SaveToDiskTask.FORM_RELATIONS_RESULT:
+			boolean thisSaveExit = false;
+			int frmReturnCode = Integer.parseInt(saveResult.getSaveErrorMessage());
+			if (frmReturnCode > 1000) {
+				frmReturnCode -= SaveToDiskTask.FRM_EXIT_OFFSET;
+				thisSaveExit = true;
+			}
+			String msg = getString(R.string.data_saved_ok) + " (from FRM)";
+			if (frmReturnCode > 0) {
+				msg = getString(R.string.others_updated_on_save, frmReturnCode);
+			} else if (frmReturnCode == FormRelationsManager.CODE_NO_SUBFORM) {
+				msg = getString(R.string.bad_form_id_on_save);
+			} else if (frmReturnCode == FormRelationsManager.CODE_NO_XPATH) {
+				msg = getString(R.string.bad_xpath_on_save);
+			}
+			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+			sendSavedBroadcast();
+			if (thisSaveExit) {
+				finishReturnInstance();
+			}
 			break;
 		}
 	}

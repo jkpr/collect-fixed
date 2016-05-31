@@ -337,6 +337,9 @@
 <string name="finalize_sub_form">Not all sub-forms have been marked complete. Please finalize all related sub-forms before sending.</string>
 <string name="no_related_forms">No related sub-forms to display</string>
 <string name="no_editing_sub_forms">A related form has already been submitted. Editing related forms is now prohibited.</string>
+<string name="others_updated_on_save">Form successfully saved! Other forms updated: %d.</string>
+<string name="bad_xpath_on_save">Form saved. Improper save_instance xpath aborted subform creation.</string>
+<string name="bad_form_id_on_save">Form saved. Non-existent form id aborted subform creation.</string>
 <string name="google_sheets_url">Google Sheets URL</string>
 <string name="default_google_sheets_url"></string>
 <string name="send_in_progress">Background send running, please try again shortly</string>

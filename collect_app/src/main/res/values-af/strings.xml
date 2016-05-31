@@ -4,9 +4,9 @@
   <string name="accuracy">Akkuraatheid</string>
   <string name="activity_not_found">Geen aktiwiteit om te hanteer nie: %s</string>
   <string name="add_another">Voeg Groep by</string>
-  <string name="add_another_repeat">Voeg nog \'n \"%s\" groep by?</string>
+  <string name="add_another_repeat">Voeg nog "\'"n \"%s\" groep by?</string>
   <string name="add_more">Voeg nog by</string>
-  <string name="add_repeat">Voeg \'n nuwe \"%s\" groep by?</string>
+  <string name="add_repeat">Voeg "\'"n nuwe \"%s\" groep by?</string>
   <string name="add_repeat_no">Moenie byvoeg nie</string>
   <string name="advance">aan na \nvolgende\nvraag</string>
   <string name="altitude">Hoogte</string>
