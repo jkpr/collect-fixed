@@ -596,6 +596,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			// request was canceled...
 			if (requestCode != HIERARCHY_ACTIVITY) {
 				((ODKView) mCurrentView).cancelWaitingForBinaryData();
+			} else {
+				// PMA-Logging BEGIN
+				mUseLog.log(UseLogContract.LEAVE_HIERARCHY);
+				// PMA-Logging END
 			}
 			return;
 		}
@@ -2448,6 +2452,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		// PMA-Logging BEGIN
 		mUseLog.log(UseLogContract.ON_PAUSE);
+		mUseLog.flush(true);
 		// PMA-Logging END
 
 		super.onPause();
