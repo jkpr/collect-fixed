@@ -18,6 +18,8 @@ import java.util.Locale;
 
 import org.javarosa.core.model.Constants;
 import org.javarosa.form.api.FormEntryPrompt;
+import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.logic.FormController;
 
 import android.content.Context;
 import android.util.Log;
@@ -45,14 +47,44 @@ public class WidgetFactory {
         appearance = appearance.toLowerCase(Locale.ENGLISH);
 
         QuestionWidget questionWidget;
+
+        // Custom Code
+        FormController formController = Collect.getInstance().getFormController();
+        String language = null;
         switch (fep.getControlType()) {
             case Constants.CONTROL_INPUT:
                 switch (fep.getDataType()) {
                     case Constants.DATATYPE_DATE_TIME:
-                        questionWidget = new DateTimeWidget(context, fep);
+//                        questionWidget = new DateTimeWidget(context, fep);
+                        // Custom code
+
+                        if(formController != null)
+                            language = formController.getLanguage();
+                        if(language != null) {
+                            if (language.toLowerCase().equals("amharic")) {
+                                questionWidget = new EthiopianDateTimeWidget(context, fep);
+                            } else {
+                                questionWidget = new DateTimeWidget(context, fep);
+                            }
+                        }else {
+                            questionWidget = new DateTimeWidget(context, fep);
+                        }
+
                         break;
                     case Constants.DATATYPE_DATE:
-                        questionWidget = new DateWidget(context, fep);
+//                        questionWidget = new DateWidget(context, fep);
+
+                        if(formController != null)
+                            language = formController.getLanguage();
+                        if(language != null) {
+                            if (language.toLowerCase().equals("amharic")) {
+                                questionWidget = new EthiopianDateTimeWidget(context, fep);
+                            } else {
+                                questionWidget = new DateTimeWidget(context, fep);
+                            }
+                        }else {
+                            questionWidget = new DateTimeWidget(context, fep);
+                        }
                         break;
                     case Constants.DATATYPE_TIME:
                         questionWidget = new TimeWidget(context, fep);

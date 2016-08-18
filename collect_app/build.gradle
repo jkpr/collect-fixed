@@ -18,7 +18,7 @@ com.android.ddmlib.DdmPreferences.setTimeOut(60000)
 
 android {
     // The following are set in the common.gradle file
-    compileSdkVersion(compileVersion)
+    compileSdkVersion(22)
     buildToolsVersion(buildTools)
 
     defaultConfig {
@@ -26,7 +26,7 @@ android {
         minSdkVersion(8)
         targetSdkVersion(8)
         versionCode(1058)
-        versionName("1.4.8b")
+        versionName("1.4.8c-et")
     }
 
     buildTypes {
@@ -74,7 +74,6 @@ dependencies {
         debugCompile(group: groupId, name: playServicesArtifactName,
                 version: playServicesSnapshot, ext: 'aar')
     }
-
     // Testing-only dependencies
     // androidTestCompile 'com.android.support.test:runner:0.3'
     // androidTestCompile 'com.android.support.test:rules:0.3'
