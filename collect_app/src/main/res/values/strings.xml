@@ -340,6 +340,7 @@
 <string name="others_updated_on_save">Form successfully saved! Other forms updated: %d.</string>
 <string name="bad_xpath_on_save">Form saved. Improper save_instance xpath aborted subform creation.</string>
 <string name="bad_form_id_on_save">Form saved. Non-existent form id aborted subform creation.</string>
+<string name="unselected_relations">Related forms must be sent together. Send unselected forms that are related?</string>
 <string name="google_sheets_url">Google Sheets URL</string>
 <string name="default_google_sheets_url"></string>
 <string name="send_in_progress">Background send running, please try again shortly</string>

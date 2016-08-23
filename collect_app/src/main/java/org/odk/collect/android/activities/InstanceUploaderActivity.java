@@ -50,7 +50,7 @@ import android.widget.EditText;
  * @author Carl Hartung (carlhartung@gmail.com)
  */
 public class InstanceUploaderActivity extends Activity implements InstanceUploaderListener {
-    private final static String t = "InstanceUploaderActivity";
+    private final static String t = "InstUploaderActivity";
     private final static int PROGRESS_DIALOG = 1;
     private final static int AUTH_DIALOG = 2;
 

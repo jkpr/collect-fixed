@@ -15,6 +15,8 @@
 package org.odk.collect.android.activities;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
@@ -135,12 +137,27 @@ public class InstanceUploaderList extends ListActivity implements
 									Integer.toString(mSelected.size()));
 
 					if (mSelected.size() > 0) {
-						// items selected
-						uploadSelectedFiles();
-						mToggled = false;
-						mSelected.clear();
-						InstanceUploaderList.this.getListView().clearChoices();
-						mUploadButton.setEnabled(false);
+						// PMA-Linking BEGIN
+						if (isAllRelationsFinalized()) {
+							Set<Long> extraRelations = getExtraRelations();
+							if (extraRelations.size() > 0) {
+								confirmAdditionalFormRelationsSend(extraRelations);
+							} else {
+								uploadSelectedFiles();
+								mToggled = false;
+								mSelected.clear();
+								InstanceUploaderList.this.getListView().clearChoices();
+								mUploadButton.setEnabled(false);
+							}
+						}
+						// Uncomment the below to revert to original
+						// // items selected
+						// uploadSelectedFiles();
+						// mToggled = false;
+						// mSelected.clear();
+						// InstanceUploaderList.this.getListView().clearChoices();
+						// mUploadButton.setEnabled(false);
+						// PMA-Linking END
 					} else {
 						// no items selected
 						Toast.makeText(getApplicationContext(),
@@ -227,26 +244,45 @@ public class InstanceUploaderList extends ListActivity implements
 		super.onStop();
 	}
 
+	// PMA-Linking
+	private Set<Long> getExtraRelations() {
+		Set<Long> extraRelations = new HashSet<Long>();
+		for (int i = 0; i < mSelected.size(); i++) {
+			Set<Long> theseRelations = FormRelationsManager.getRelatedForms(mSelected.get(i));
+			for (Long id : theseRelations) {
+				if ( !mSelected.contains(id) ) {
+					extraRelations.add(id);
+				}
+			}
+		}
+		return extraRelations;
+	}
+
+	// PMA-Linking
+	private boolean isAllRelationsFinalized() {
+		for (int i = 0; i < mSelected.size(); i++) {
+			long thisId = mSelected.get(i);
+			// make sure this form has no unfinished parent/children forms
+			int returnCode = FormRelationsManager.getRelatedFormsFinalized(thisId);
+			if (returnCode == FormRelationsManager.PARENT_UNFINALIZED) {
+				Toast.makeText(this, getString(R.string.finalize_parent_form),
+						Toast.LENGTH_SHORT).show();
+				return false;
+			} else if (returnCode == FormRelationsManager.CHILD_UNFINALIZED ||
+					returnCode == FormRelationsManager.SIBLING_UNFINALIZED) {
+				Toast.makeText(this, getString(R.string.finalize_sub_form),
+						Toast.LENGTH_SHORT).show();
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private void uploadSelectedFiles() {
         // send list of _IDs.
         long[] instanceIDs = new long[mSelected.size()];
         for (int i = 0; i < mSelected.size(); i++) {
             instanceIDs[i] = mSelected.get(i);
-
-			// PMA-Linking BEGIN
-			// make sure this form has no unfinished parent/children forms
-			int returnCode = FormRelationsManager.getRelatedFormsFinalized(instanceIDs[i]);
-			if (returnCode == FormRelationsManager.PARENT_UNFINALIZED) {
-				Toast.makeText(this, getString(R.string.finalize_parent_form),
-						Toast.LENGTH_SHORT).show();
-				return;
-			} else if (returnCode == FormRelationsManager.CHILD_UNFINALIZED ||
-					returnCode == FormRelationsManager.SIBLING_UNFINALIZED) {
-				Toast.makeText(this, getString(R.string.finalize_sub_form),
-						Toast.LENGTH_SHORT).show();
-				return;
-			}
-			// PMA-Linking END
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -414,6 +450,51 @@ public class InstanceUploaderList extends ListActivity implements
 				.logAction(this, "toggleButton.longClick",
 						Boolean.toString(mToggled));
 		return showSentAndUnsentChoices();
+	}
+
+	// PMA-Linking
+	private boolean confirmAdditionalFormRelationsSend(final Set<Long> extraRelations) {
+		String[] items = {
+			getString(R.string.cancel),
+			getString(R.string.ok)
+		};
+
+		AlertDialog alertDialog = new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_info)
+				.setTitle(getString(R.string.uploading_data))
+				.setMessage(getString(R.string.unselected_relations))
+				.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						addRelationsAndSend(extraRelations);
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				})
+				.create();
+		alertDialog.show();
+		return true;
+	}
+
+	// PMA-Linking
+	private void addRelationsAndSend(Set<Long> extraRelations) {
+		ListView ls = getListView();
+		for (int pos = 0; pos < ls.getCount(); pos++) {
+			long curItem = ls.getItemIdAtPosition(pos);
+			if (extraRelations.contains(curItem)) {
+				ls.setItemChecked(pos, true);
+				mSelected.add(curItem);
+			}
+		}
+		uploadSelectedFiles();
+		mToggled = false;
+		mSelected.clear();
+		InstanceUploaderList.this.getListView().clearChoices();
+		mUploadButton.setEnabled(false);
 	}
 
 	private boolean showSentAndUnsentChoices() {
