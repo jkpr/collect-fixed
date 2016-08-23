@@ -78,12 +78,12 @@ public class WidgetFactory {
                             language = formController.getLanguage();
                         if(language != null) {
                             if (language.toLowerCase().equals("amharic")) {
-                                questionWidget = new EthiopianDateTimeWidget(context, fep);
+                                questionWidget = new EthiopianDateWidget(context, fep);
                             } else {
-                                questionWidget = new DateTimeWidget(context, fep);
+                                questionWidget = new DateWidget(context, fep);
                             }
                         }else {
-                            questionWidget = new DateTimeWidget(context, fep);
+                            questionWidget = new DateWidget(context, fep);
                         }
                         break;
                     case Constants.DATATYPE_TIME:
