@@ -473,7 +473,7 @@ public class EthiopianDateTimeWidget extends QuestionWidget{
 			int ethioMonth = ethiopianMonthArrayPointer + 1;
 			int ethioYear = Integer.parseInt(txtYear.getText().toString());
 			
-			int hour = timePicker.getCurrentHour() - 1;
+			int hour = timePicker.getCurrentHour();
 			int minute = timePicker.getCurrentMinute();
 			
 	    	return new DateTime(ethioYear, ethioMonth, ethioDay, hour, minute, 0, 0, chron_eth);
