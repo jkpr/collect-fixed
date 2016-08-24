@@ -454,11 +454,6 @@ public class InstanceUploaderList extends ListActivity implements
 
 	// PMA-Linking
 	private boolean confirmAdditionalFormRelationsSend(final Set<Long> extraRelations) {
-		String[] items = {
-			getString(R.string.cancel),
-			getString(R.string.ok)
-		};
-
 		AlertDialog alertDialog = new AlertDialog.Builder(this)
 				.setIcon(android.R.drawable.ic_dialog_info)
 				.setTitle(getString(R.string.uploading_data))
