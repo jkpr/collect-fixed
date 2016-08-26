@@ -626,6 +626,15 @@ public class UseLog {
                     }
                 }
             }
+            else if ( null != s ){ // && !UseLogContract.THIN_XPATH
+                int firstSlash = s.indexOf("/");
+                if ( firstSlash >= 0 && firstSlash < s.length()) {
+                    int secondSlash = s.indexOf("/", firstSlash + 1);
+                    if ( secondSlash >= 0 && secondSlash < s.length() ) {
+                        s = s.substring(secondSlash + 1);
+                    }
+                }
+            }
             return s;
         }
 

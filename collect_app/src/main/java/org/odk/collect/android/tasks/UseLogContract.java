@@ -33,10 +33,10 @@ public class UseLogContract {
     // DIVERT_TO_LOGCAT is true iff records should be written to logcat and not to file
     protected static final boolean DIVERT_TO_LOGCAT = false;
     // THIN_XPATH is true iff xpaths are shortened to the last two significant components
-    protected static final boolean THIN_XPATH = true;
+    protected static final boolean THIN_XPATH = false;
 
     protected static final String USE_LOG_NAME = "log.txt";
-    protected static final String LOG_VERSION = "v0.2";
+    protected static final String LOG_VERSION = "v0.3";
     protected static final String ENCODING = "UTF-8";
 
     // UseLog Events: initialization
