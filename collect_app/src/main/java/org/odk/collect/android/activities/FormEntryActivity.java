@@ -1693,6 +1693,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			return;
 		}
 
+		// PMA-Logging BEGIN
+		mUseLog.log(UseLogContract.CONTRAVENE_CONSTRAINT, (ODKView) mCurrentView);
+		// PMA-Logging END
 		showCustomToast(constraintText, Toast.LENGTH_SHORT);
 	}
 
@@ -1894,7 +1897,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 							.logInstanceAction(this,
 									"createDeleteRepeatConfirmDialog", "OK");
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLogContract.REMOVE_REPEAT);
+					mUseLog.log(UseLogContract.REMOVE_REPEAT, (ODKView) mCurrentView);
 					// PMA-Logging END
 					formController.deleteRepeat();
 					showPreviousView();
@@ -1957,7 +1960,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 							if ( isDeleteRepeat ) {
 								FormRelationsManager.manageRepeatDelete(instanceId, repeatIndex);
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLogContract.REMOVE_REPEAT);
+								mUseLog.log(UseLogContract.REMOVE_REPEAT, (ODKView) mCurrentView);
 								// PMA-Logging END
 								formController.deleteRepeat();
 								// PMA-Logging BEGIN
