@@ -27,3 +27,6 @@ The `google-play-services` project should be pulled and at the tip.
 
 Then, import the `collect/build.gradle` file into Android Studio.
 
+## Releases
+
+2016-10-21, 1.4.8c
