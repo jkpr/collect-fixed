@@ -67,9 +67,11 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -102,7 +104,7 @@ import javax.xml.xpath.XPathFactory;
  * Creator: James K. Pringle
  * E-mail: jpringle@jhu.edu
  * Created: 20 August 2015
- * Last modified: 26 May 2016
+ * Last modified: 23 August 2016
  */
 public class FormRelationsManager {
 
@@ -1665,6 +1667,30 @@ public class FormRelationsManager {
     }
 
     // Assumes one generation span max.
+
+    /**
+     * Get the set of instanceIds of all related forms
+     *
+     * @param instanceId The instance id of the form's family to check
+     * @return Returns a set with the instance ids of all family members
+     */
+    public static Set<Long> getRelatedForms(long instanceId) {
+        Set<Long> relatedForms = new HashSet<Long>();
+        long[] children = FormRelationsDb.getChildren(instanceId);
+        for (int i = 0; i < children.length; i++) {
+            relatedForms.add(children[i]);
+        }
+        long parent = FormRelationsDb.getParent(instanceId);
+        if (parent != -1) {
+            relatedForms.add(parent);
+            long[] siblings = FormRelationsDb.getChildren(parent);
+            for (int i = 0; i < siblings.length; i++) {
+                relatedForms.add(siblings[i]);
+            }
+
+        }
+        return relatedForms;
+    }
 
     /**
      * Checks parents, children, and siblings for finalized-ness.

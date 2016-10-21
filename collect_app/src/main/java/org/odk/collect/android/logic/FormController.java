@@ -38,6 +38,7 @@ import org.javarosa.core.services.PrototypeManager;
 import org.javarosa.core.services.transport.payload.ByteArrayPayload;
 import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryController;
+import org.javarosa.form.api.FormEntryModel;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.javarosa.model.xform.XFormSerializingVisitor;
 import org.javarosa.model.xform.XFormsModule;
@@ -305,7 +306,11 @@ public class FormController {
      * @return the currently selected language.
      */
     public String getLanguage() {
-        return mFormEntryController.getModel().getLanguage();
+        FormEntryModel model = mFormEntryController.getModel();
+        if(model != null && model.getForm().getLocalizer()!= null)
+            return mFormEntryController.getModel().getLanguage();
+        else
+            return null;
     }
 
     public String getBindAttribute( String attributeNamespace, String attributeName) {

@@ -182,6 +182,12 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/admin_advanced_settings">
+        <!-- PMA-Linking BEGIN -->
+        <Preference
+            android:key="@string/reset_relationsdb_key"
+            android:title="@string/reset_relationsdb" >
+        </Preference>
+        <!-- PMA-Linking END -->
         <ListPreference
                 android:id="@+id/form_processing_logic"
                 android:defaultValue="@string/default_form_processing_logic"

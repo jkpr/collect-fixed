@@ -70,7 +70,7 @@
             android:title="@string/constraint_behavior" />
        <ListPreference
             android:id="@+id/navigation"
-            android:defaultValue="swipe"
+            android:defaultValue="buttons"
             android:dialogTitle="@string/navigation"
             android:entries="@array/navigation_entries"
             android:entryValues="@array/navigation_entry_values"
