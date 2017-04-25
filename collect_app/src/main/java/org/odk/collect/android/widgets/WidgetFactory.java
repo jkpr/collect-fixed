@@ -63,7 +63,9 @@ public class WidgetFactory {
                         if(language != null) {
                             if (language.toLowerCase().equals("amharic") ||
                                     language.toLowerCase().equals("oromiffa") ||
-                                    language.toLowerCase().equals("tigrigna")) {
+                                    language.toLowerCase().equals("tigrinya") ||
+                                    language.toLowerCase().equals("tigrigna") ||
+                                    language.toLowerCase().equals("tigirigna")) {
                                 questionWidget = new EthiopianDateTimeWidget(context, fep);
                             } else {
                                 questionWidget = new DateTimeWidget(context, fep);
@@ -81,7 +83,9 @@ public class WidgetFactory {
                         if(language != null) {
                             if (language.toLowerCase().equals("amharic") ||
                                     language.toLowerCase().equals("oromiffa") ||
-                                    language.toLowerCase().equals("tigrigna")) {
+                                    language.toLowerCase().equals("tigrinya") ||
+                                    language.toLowerCase().equals("tigrigna") ||
+                                    language.toLowerCase().equals("tigirigna")) {
                                 questionWidget = new EthiopianDateWidget(context, fep);
                             } else {
                                 questionWidget = new DateWidget(context, fep);
