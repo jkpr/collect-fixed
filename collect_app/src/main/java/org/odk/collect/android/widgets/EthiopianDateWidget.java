@@ -105,7 +105,7 @@ public class EthiopianDateWidget extends QuestionWidget{
 	        
 	        LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	        View vv = vi.inflate(R.layout.ethiopian_date_widget, null);
-	        addView(vv);
+			addAnswerView(vv);
 	        
 	        /*
 	         * Initialise handlers for incrementing/decrementing dates
