@@ -47,7 +47,7 @@ import java.util.Set;
  * Creator: James K. Pringle
  * E-mail: jpringle@jhu.edu
  * Created: 20 August 2015
- * Last modified: 9 September 2015
+ * Last modified: 24 August 2016
  */
 public class FormRelationsDb extends ODKSQLiteOpenHelper {
 
@@ -65,6 +65,22 @@ public class FormRelationsDb extends ODKSQLiteOpenHelper {
             Log.i(TAG, "onCreate. Created relations table.");
         }
         db.execSQL(FormRelations.CREATE_TABLE);
+    }
+
+    /**
+     * Reset the database to start fresh
+     */
+    static public void reset() {
+        if (LOCAL_LOG) {
+            Log.i(TAG, "Reset relations table");
+        }
+        FormRelationsDb frdb = new FormRelationsDb();
+        SQLiteDatabase db = frdb.getWritableDatabase();
+
+        db.execSQL(FormRelations.DELETE_TABLE);
+        db.execSQL(FormRelations.CREATE_TABLE);
+
+        db.close();
     }
 
     /**

@@ -20,12 +20,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.preference.ListPreference;
 import android.preference.Preference;
 
 import org.javarosa.core.model.FormDef;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.database.FormRelationsDb;
 import org.odk.collect.android.utilities.CompatibilityUtils;
 
 import android.content.Context;
@@ -112,7 +115,41 @@ public class AdminPreferencesActivity extends PreferenceActivity {
                 return true;
             }
         });
+
+		// PMA-Linking BEGIN
+		Preference resetRelationsDb = prefMgr.findPreference(getString(R.string.reset_relationsdb_key));
+		resetRelationsDb.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				resetRelationsDb();
+				return true;
+			}
+		});
+		// PMA-Linking END
     }
+
+    // PMA-Linking
+	private void resetRelationsDb() {
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setTitle(getString(R.string.reset_relationsdb))
+                .setMessage(getString(R.string.reset_relationsdb_confirm))
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        FormRelationsDb.reset();
+                        Toast.makeText(getApplicationContext(), "Relations database reset", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                })
+                .create();
+        alertDialog.show();
+	}
 
     @Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -231,7 +268,7 @@ public class AdminPreferencesActivity extends PreferenceActivity {
 				}
         } catch (Exception e) {
             e.printStackTrace();
-            Log.w("AdminPreferencesActivity", "Unable to get EvalBehavior -- defaulting to recommended mode");
+            Log.w("AdminPrefActivity", "Unable to get EvalBehavior -- defaulting to recommended mode");
             mode = FormDef.recommendedMode;
         }
 

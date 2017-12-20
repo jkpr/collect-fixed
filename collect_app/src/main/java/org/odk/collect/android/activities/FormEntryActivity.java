@@ -596,6 +596,10 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			// request was canceled...
 			if (requestCode != HIERARCHY_ACTIVITY) {
 				((ODKView) mCurrentView).cancelWaitingForBinaryData();
+			} else {
+				// PMA-Logging BEGIN
+				mUseLog.log(UseLogContract.LEAVE_HIERARCHY);
+				// PMA-Logging END
 			}
 			return;
 		}
@@ -1689,6 +1693,9 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 			return;
 		}
 
+		// PMA-Logging BEGIN
+		mUseLog.log(UseLogContract.CONTRAVENE_CONSTRAINT, (ODKView) mCurrentView);
+		// PMA-Logging END
 		showCustomToast(constraintText, Toast.LENGTH_SHORT);
 	}
 
@@ -1890,7 +1897,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 							.logInstanceAction(this,
 									"createDeleteRepeatConfirmDialog", "OK");
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLogContract.REMOVE_REPEAT);
+					mUseLog.log(UseLogContract.REMOVE_REPEAT, (ODKView) mCurrentView);
 					// PMA-Logging END
 					formController.deleteRepeat();
 					showPreviousView();
@@ -1953,7 +1960,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 							if ( isDeleteRepeat ) {
 								FormRelationsManager.manageRepeatDelete(instanceId, repeatIndex);
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLogContract.REMOVE_REPEAT);
+								mUseLog.log(UseLogContract.REMOVE_REPEAT, (ODKView) mCurrentView);
 								// PMA-Logging END
 								formController.deleteRepeat();
 								// PMA-Logging BEGIN
@@ -2448,6 +2455,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		// PMA-Logging BEGIN
 		mUseLog.log(UseLogContract.ON_PAUSE);
+		mUseLog.flush(true);
 		// PMA-Logging END
 
 		super.onPause();

@@ -30,6 +30,7 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryController;
 import org.javarosa.form.api.FormEntryPrompt;
@@ -39,6 +40,7 @@ import org.odk.collect.android.exception.UseLogException;
 import org.odk.collect.android.logic.FormController;
 import org.odk.collect.android.logic.FormRelationsManager;
 import org.odk.collect.android.tasks.UseLogContract.DataContainer;
+import org.odk.collect.android.views.ODKView;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -46,8 +48,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Creator: James K. Pringle
@@ -299,6 +303,7 @@ public class UseLog {
             case UseLogContract.SAVE_FORM:
             case UseLogContract.ENTER_FORM:
             case UseLogContract.LEAVE_FORM:
+            case UseLogContract.CONTRAVENE_CONSTRAINT:
                 FormController formController = Collect.getInstance().getFormController();
                 if ( null == formController ) {
                     DataContainer d = new DataContainer();
@@ -352,6 +357,40 @@ public class UseLog {
                 DataContainer data = new DataContainer(savedInstancePath, timeStamp, xpath, text);
                 Message m = obtainMessage(event, data);
                 sendMessage(m);
+                break;
+        }
+    }
+
+    public void log(int event, ODKView view) {
+        if ( view == null ) {
+            log(event);
+            return;
+        }
+        openIo(true);
+        switch (event) {
+            case UseLogContract.CONTRAVENE_CONSTRAINT:
+            case UseLogContract.REMOVE_REPEAT:
+                String timeStamp = getTimeStamp();
+                FormController formController = Collect.getInstance().getFormController();
+                Map<FormIndex, IAnswerData> answers = view.getAnswers();
+                Iterator<FormIndex> it = answers.keySet().iterator();
+                while (it.hasNext()) {
+                    FormIndex index = it.next();
+                    if (formController.getEvent(index) == FormEntryController.EVENT_QUESTION) {
+                        IAnswerData answer = answers.get(index);
+                        String text = answer == null ? "" : answer.getDisplayText();
+                        String xpath = formController.getXPath(index);
+                        DataContainer d = new DataContainer();
+                        d.timeStamp = timeStamp;
+                        d.xpath = xpath;
+                        d.value = text;
+                        Message m = obtainMessage(event, d);
+                        sendMessage(m);
+                    }
+                }
+                break;
+            default:
+                log(event);
                 break;
         }
     }
@@ -565,6 +604,7 @@ public class UseLog {
                 case UseLogContract.LEAVE_HIERARCHY:
                 case UseLogContract.BEGIN_FORM:
                 case UseLogContract.FINISH_FORM:
+                case UseLogContract.CONTRAVENE_CONSTRAINT:
                     writeRecord(msg);
                     break;
                 case UseLogContract.PRINT_STRING:
@@ -623,6 +663,15 @@ public class UseLog {
                     int secondLastSlash = s.lastIndexOf("/", lastSlash - 1);
                     if ( secondLastSlash >= 0 ) {
                         s = s.substring(secondLastSlash);
+                    }
+                }
+            }
+            else if ( null != s ){ // && !UseLogContract.THIN_XPATH
+                int firstSlash = s.indexOf("/");
+                if ( firstSlash >= 0 && firstSlash < s.length()) {
+                    int secondSlash = s.indexOf("/", firstSlash + 1);
+                    if ( secondSlash >= 0 && secondSlash < s.length() ) {
+                        s = s.substring(secondSlash + 1);
                     }
                 }
             }

@@ -33,10 +33,10 @@ public class UseLogContract {
     // DIVERT_TO_LOGCAT is true iff records should be written to logcat and not to file
     protected static final boolean DIVERT_TO_LOGCAT = false;
     // THIN_XPATH is true iff xpaths are shortened to the last two significant components
-    protected static final boolean THIN_XPATH = true;
+    protected static final boolean THIN_XPATH = false;
 
     protected static final String USE_LOG_NAME = "log.txt";
-    protected static final String LOG_VERSION = "v0.2";
+    protected static final String LOG_VERSION = "v0.4";
     protected static final String ENCODING = "UTF-8";
 
     // UseLog Events: initialization
@@ -58,6 +58,7 @@ public class UseLogContract {
     public static final int LEAVE_HIERARCHY = 11;
     public static final int BEGIN_FORM = 12;
     public static final int FINISH_FORM = 13;
+    public static final int CONTRAVENE_CONSTRAINT = 14;
 
     // UseLog Events: form relations
     public static final int RELATION_CHANGE_VALUE = 20;
@@ -100,6 +101,8 @@ public class UseLogContract {
                 return "BF";
             case FINISH_FORM:
                 return "FF";
+            case CONTRAVENE_CONSTRAINT:
+                return "CC";
             case RELATION_CHANGE_VALUE:
                 return "rV";
             case RELATION_REMOVE_REPEAT:

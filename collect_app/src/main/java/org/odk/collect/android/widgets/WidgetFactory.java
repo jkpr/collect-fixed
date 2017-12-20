@@ -61,9 +61,11 @@ public class WidgetFactory {
                         if(formController != null)
                             language = formController.getLanguage();
                         if(language != null) {
-                            if (language.toLowerCase().equals("amharic")
-                                    || language.toLowerCase().equals("oromiffa")
-                                    || language.toLowerCase().equals("tigirigna")) {
+                            if (language.toLowerCase().equals("amharic") ||
+                                    language.toLowerCase().equals("oromiffa") ||
+                                    language.toLowerCase().equals("tigrinya") ||
+                                    language.toLowerCase().equals("tigrigna") ||
+                                    language.toLowerCase().equals("tigirigna")) {
                                 questionWidget = new EthiopianDateTimeWidget(context, fep);
                             } else {
                                 questionWidget = new DateTimeWidget(context, fep);
@@ -79,9 +81,11 @@ public class WidgetFactory {
                         if(formController != null)
                             language = formController.getLanguage();
                         if(language != null) {
-                            if (language.toLowerCase().equals("amharic")
-                                    || language.toLowerCase().equals("oromiffa")
-                                    || language.toLowerCase().equals("tigirigna")) {
+                            if (language.toLowerCase().equals("amharic") ||
+                                    language.toLowerCase().equals("oromiffa") ||
+                                    language.toLowerCase().equals("tigrinya") ||
+                                    language.toLowerCase().equals("tigrigna") ||
+                                    language.toLowerCase().equals("tigirigna")) {
                                 questionWidget = new EthiopianDateWidget(context, fep);
                             } else {
                                 questionWidget = new DateWidget(context, fep);
