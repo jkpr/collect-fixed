@@ -31,6 +31,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.exception.JavaRosaException;
+import org.odk.collect.android.fragments.dialogs.NumberPickerDialog;
 import org.odk.collect.android.listeners.AdvanceToNextListener;
 import org.odk.collect.android.listeners.FormLoaderListener;
 import org.odk.collect.android.listeners.FormSavedListener;
@@ -74,6 +75,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore.Images;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
@@ -104,6 +106,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.odk.collect.android.widgets.RangeWidget;
 
 /**
  * FormEntryActivity is responsible for displaying questions, animating
@@ -112,9 +115,9 @@ import android.widget.Toast;
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Thomas Smyth, Sassafras Tech Collective (tom@sassafrastech.com; constraint behavior option)
  */
-public class FormEntryActivity extends Activity implements AnimationListener,
+public class FormEntryActivity extends AppCompatActivity implements AnimationListener,
 		FormLoaderListener, FormSavedListener, AdvanceToNextListener,
-		OnGestureListener, SavePointListener {
+		OnGestureListener, SavePointListener, NumberPickerDialog.NumberPickerListener {
 	private static final String t = "FormEntryActivity";
 
 	// save with every swipe forward or back. Timings indicate this takes .25
@@ -218,6 +221,18 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private ImageButton mBackButton;
 
     private String stepMessage = "";
+
+
+	@Override
+	public void onNumberPickerValueSelected(int widgetId, int value) {
+		if (mCurrentView != null) {
+			for (QuestionWidget qw : ((ODKView) mCurrentView).getWidgets()) {
+				if (qw instanceof RangeWidget && widgetId == qw.getId()) {
+					((RangeWidget) qw).setNumberPickerValue(value);
+				}
+			}
+		}
+	}
 
 	enum AnimationType {
 		LEFT, RIGHT, FADE
@@ -1057,7 +1072,7 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	 * If we're loading, then we pass the loading thread to our next instance.
 	 */
 	@Override
-	public Object onRetainNonConfigurationInstance() {
+	public Object onRetainCustomNonConfigurationInstance() {
 		FormController formController = Collect.getInstance()
 				.getFormController();
 		// if a form is loading, pass the loader task
@@ -1088,15 +1103,15 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 	private View createView(int event, boolean advancingPage) {
 		FormController formController = Collect.getInstance()
 				.getFormController();
-		setTitle(getString(R.string.app_name) + " > "
-				+ formController.getFormTitle());
+//		setTitle(getString(R.string.app_name) + " > "
+//				+ formController.getFormTitle());
 
 		switch (event) {
 		case FormEntryController.EVENT_BEGINNING_OF_FORM:
 			View startView = View
 					.inflate(this, R.layout.form_entry_start, null);
-			setTitle(getString(R.string.app_name) + " > "
-					+ formController.getFormTitle());
+//			setTitle(getString(R.string.app_name) + " > "
+//					+ formController.getFormTitle());
 
 			Drawable image = null;
 			File mediaFolder = formController.getMediaFolder();
@@ -1377,6 +1392,11 @@ public class FormEntryActivity extends Activity implements AnimationListener,
 
 		return handled; // this is always true
 	}
+
+//	@Override
+//	public void onPointerCaptureChanged(boolean hasCapture) {
+//
+//	}
 
 	/**
 	 * Determines what should be displayed on the screen. Possible options are:
