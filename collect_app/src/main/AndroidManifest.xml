@@ -9,6 +9,7 @@
 	the specific language governing permissions and limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="org.odk.collect.android"
     android:versionCode="1058"
     android:versionName="1.4.8c" >
@@ -80,7 +81,8 @@
             android:name=".activities.FormEntryActivity"
             android:configChanges="orientation"
             android:label="@string/app_name"
-            android:windowSoftInputMode="adjustResize" >
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
@@ -214,7 +216,7 @@
         <activity
             android:name=".activities.AndroidShortcuts"
             android:label="ODK Form"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+            android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
 
@@ -237,7 +239,8 @@
                 android:value="AIzaSyBS-JQ-dnaZ_8qsbvSyr_I3rTPFd5fJsYI"/>
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="7571000" />  <!-- integer/google_play_services_version -->
+            android:value="10084000"
+            tools:replace="android:value"/>  <!-- integer/google_play_services_version -->
 
         <uses-library
             android:name="com.google.android.maps"

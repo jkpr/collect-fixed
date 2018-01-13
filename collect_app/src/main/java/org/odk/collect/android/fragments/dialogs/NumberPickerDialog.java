@@ -16,12 +16,15 @@
 
 package org.odk.collect.android.fragments.dialogs;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
+//import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
@@ -62,6 +65,21 @@ public class NumberPickerDialog extends DialogFragment {
             throw new ClassCastException(context.toString() + " must implement OnHeadlineSelectedListener");
         }
     }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            try {
+                listener = (NumberPickerListener) activity;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(activity.toString() + " must implement OnHeadlineSelectedListener");
+            }
+        }
+    }
+
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

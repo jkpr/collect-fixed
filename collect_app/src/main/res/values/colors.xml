@@ -16,7 +16,9 @@ the License.
 -->
 <resources>
 
+    <color name="primaryTextColor">#000000</color>
     <drawable name="white">#ffffffff</drawable>
     <drawable name="black">#ff000000</drawable>
+    <color name="black">#ff000000</color>
 
 </resources>

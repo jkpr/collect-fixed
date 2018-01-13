@@ -6,5 +6,5 @@
 	    <item name="android:scrollbarSize">1.75mm</item>
 	    <item name="android:scrollbarAlwaysDrawVerticalTrack">true</item>
 	    <item name="android:fadeScrollbars">false</item>
-	</style>    
+	</style>
 </resources>
