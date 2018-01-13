@@ -195,6 +195,21 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 	}
 
 	@Override
+	public void waitForData() {
+
+	}
+
+	@Override
+	public void cancelWaitingForData() {
+
+	}
+
+	@Override
+	public boolean isWaitingForData() {
+		return false;
+	}
+
+	@Override
 	public IAnswerData getAnswer() {
 		if (mBinaryName != null) {
 			return new StringData(mBinaryName.toString());

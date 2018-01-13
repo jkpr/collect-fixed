@@ -211,6 +211,21 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
     public void clearAnswer() {
     }
 
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
+    }
+
 
     @Override
     public IAnswerData getAnswer() {

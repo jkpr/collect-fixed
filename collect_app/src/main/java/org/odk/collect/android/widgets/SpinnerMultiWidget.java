@@ -17,6 +17,7 @@ package org.odk.collect.android.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -49,6 +50,7 @@ import android.widget.TextView;
  * 
  * @author Jeff Beorse (jeff@beorse.net)
  */
+@SuppressLint("ViewConstructor")
 public class SpinnerMultiWidget extends QuestionWidget {
 
     List<SelectChoice> mItems;
@@ -212,6 +214,21 @@ public class SpinnerMultiWidget extends QuestionWidget {
         for (int i = 0; i < selections.length; i++) {
             selections[i] = false;
         }
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

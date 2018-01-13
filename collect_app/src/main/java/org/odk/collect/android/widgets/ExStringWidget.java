@@ -205,6 +205,21 @@ public class ExStringWidget extends QuestionWidget implements IBinaryWidget {
     	mAnswer.setText(null);
     }
 
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
+    }
+
 
     @Override
     public IAnswerData getAnswer() {

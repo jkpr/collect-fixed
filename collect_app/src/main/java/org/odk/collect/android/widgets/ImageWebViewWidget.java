@@ -17,6 +17,7 @@ package org.odk.collect.android.widgets;
 import java.io.File;
 import java.util.Date;
 
+import android.annotation.SuppressLint;
 import android.view.*;
 import android.widget.*;
 import org.javarosa.core.model.data.IAnswerData;
@@ -48,6 +49,7 @@ import android.webkit.WebView;
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
+@SuppressLint("ViewConstructor")
 public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget {
 	private final static String t = "MediaWidget";
 
@@ -287,6 +289,21 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 
 		// reset buttons
 		mCaptureButton.setText(getContext().getString(R.string.capture_image));
+	}
+
+	@Override
+	public void waitForData() {
+
+	}
+
+	@Override
+	public void cancelWaitingForData() {
+
+	}
+
+	@Override
+	public boolean isWaitingForData() {
+		return false;
 	}
 
 	@Override

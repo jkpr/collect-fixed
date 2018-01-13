@@ -14,6 +14,7 @@
 
 package org.odk.collect.android.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -47,6 +48,7 @@ import java.util.List;
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
+@SuppressLint("ViewConstructor")
 public class SelectMultiWidget extends QuestionWidget {
     private boolean mCheckboxInit = true;
     List<SelectChoice> mItems;
@@ -170,6 +172,21 @@ public class SelectMultiWidget extends QuestionWidget {
     			c.setChecked(false);
     		}
     	}
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

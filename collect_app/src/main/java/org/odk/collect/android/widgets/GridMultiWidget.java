@@ -35,6 +35,7 @@ import org.odk.collect.android.utilities.FileUtils;
 import org.odk.collect.android.views.AudioButton.AudioHandler;
 import org.odk.collect.android.views.ExpandedHeightGridView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -64,6 +65,7 @@ import android.widget.TextView;
  *
  * @author Jeff Beorse (jeff@beorse.net)
  */
+@SuppressLint("ViewConstructor")
 public class GridMultiWidget extends QuestionWidget {
 
     // The RGB value for the orange background
@@ -372,6 +374,21 @@ public class GridMultiWidget extends QuestionWidget {
             imageViews[i].setBackgroundColor(Color.WHITE);
         }
 
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

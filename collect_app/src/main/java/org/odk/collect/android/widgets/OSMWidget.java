@@ -3,6 +3,7 @@ package org.odk.collect.android.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.view.ViewGroup;
 import android.widget.*;
 import org.apache.http.protocol.HTTP;
@@ -37,6 +38,7 @@ import android.view.inputmethod.InputMethodManager;
  * @author Nicholas Hallahan nhallahan@spatialdev.com
  *
  */
+@SuppressLint("ViewConstructor")
 public class OSMWidget extends QuestionWidget implements IBinaryWidget {
 	
 	// button colors
@@ -249,6 +251,21 @@ public class OSMWidget extends QuestionWidget implements IBinaryWidget {
 	@Override
 	public void clearAnswer() {
 		mOSMFileNameTextView.setText(null);
+	}
+
+	@Override
+	public void waitForData() {
+
+	}
+
+	@Override
+	public void cancelWaitingForData() {
+
+	}
+
+	@Override
+	public boolean isWaitingForData() {
+		return false;
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -34,6 +35,7 @@ import android.widget.TextView;
  * 
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
+@SuppressLint("ViewConstructor")
 public class TriggerWidget extends QuestionWidget {
 
     private CheckBox mTriggerButton;
@@ -99,6 +101,21 @@ public class TriggerWidget extends QuestionWidget {
     public void clearAnswer() {
         mStringAnswer.setText(null);
         mTriggerButton.setChecked(false);
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

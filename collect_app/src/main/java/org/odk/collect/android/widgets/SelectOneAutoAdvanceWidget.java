@@ -17,6 +17,7 @@ package org.odk.collect.android.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.view.ViewGroup;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
@@ -52,6 +53,7 @@ import android.widget.RelativeLayout;
  * 
  * @author Jeff Beorse (jeff@beorse.net)
  */
+@SuppressLint("ViewConstructor")
 public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnCheckedChangeListener {
 	 List<SelectChoice> mItems; // may take a while to compute
     ArrayList<RadioButton> buttons;
@@ -155,6 +157,21 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
                 return;
             }
         }
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

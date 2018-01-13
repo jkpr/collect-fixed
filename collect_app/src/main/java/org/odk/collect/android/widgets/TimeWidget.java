@@ -20,6 +20,7 @@ import org.javarosa.form.api.FormEntryPrompt;
 import org.joda.time.DateTime;
 import org.odk.collect.android.application.Collect;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.inputmethod.InputMethodManager;
@@ -32,6 +33,7 @@ import java.util.Date;
  * 
  * @author Carl Hartung (carlhartung@gmail.com)
  */
+@SuppressLint("ViewConstructor")
 public class TimeWidget extends QuestionWidget {
 
     private TimePicker mTimePicker;
@@ -90,6 +92,21 @@ public class TimeWidget extends QuestionWidget {
         DateTime ldt = new DateTime();
         mTimePicker.setCurrentHour(ldt.getHourOfDay());
         mTimePicker.setCurrentMinute(ldt.getMinuteOfHour());
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

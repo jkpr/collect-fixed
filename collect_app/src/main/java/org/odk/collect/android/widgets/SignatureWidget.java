@@ -16,6 +16,7 @@ package org.odk.collect.android.widgets;
 
 import java.io.File;
 
+import android.annotation.SuppressLint;
 import android.view.ViewGroup;
 import android.widget.*;
 import org.javarosa.core.model.data.IAnswerData;
@@ -49,6 +50,7 @@ import android.view.inputmethod.InputMethodManager;
  * @author BehrAtherton@gmail.com
  *
  */
+@SuppressLint("ViewConstructor")
 public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
     private final static String t = "SignatureWidget";
 
@@ -192,8 +194,23 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
         mSignButton.setText(getContext().getString(R.string.sign_button));
 	}
 
-	
-	@Override
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
+    }
+
+
+    @Override
 	public IAnswerData getAnswer() {
         if (mBinaryName != null) {
             return new StringData(mBinaryName.toString());

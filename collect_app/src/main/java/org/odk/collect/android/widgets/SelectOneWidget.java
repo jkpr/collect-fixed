@@ -17,6 +17,7 @@ package org.odk.collect.android.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.text.method.LinkMovementMethod;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
@@ -49,6 +50,7 @@ import android.widget.RadioButton;
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
+@SuppressLint("ViewConstructor")
 public class SelectOneWidget extends QuestionWidget implements
 		OnCheckedChangeListener, AudioPlayListener {
 
@@ -155,6 +157,21 @@ public class SelectOneWidget extends QuestionWidget implements
 				return;
 			}
 		}
+	}
+
+	@Override
+	public void waitForData() {
+
+	}
+
+	@Override
+	public void cancelWaitingForData() {
+
+	}
+
+	@Override
+	public boolean isWaitingForData() {
+		return false;
 	}
 
 	@Override

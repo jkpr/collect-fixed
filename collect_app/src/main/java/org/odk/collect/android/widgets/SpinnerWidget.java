@@ -26,6 +26,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.external.ExternalDataUtil;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -47,6 +48,7 @@ import android.widget.TextView;
  * 
  * @author Jeff Beorse (jeff@beorse.net)
  */
+@SuppressLint("ViewConstructor")
 public class SpinnerWidget extends QuestionWidget {
     List<SelectChoice> mItems;
     Spinner spinner;
@@ -140,6 +142,21 @@ public class SpinnerWidget extends QuestionWidget {
         // It seems that spinners cannot return a null answer. This resets the answer
         // to its original value, but it is not null.
         spinner.setSelection(mItems.size());
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

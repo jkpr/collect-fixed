@@ -280,6 +280,21 @@ public class AlignedImageWidget extends QuestionWidget implements IBinaryWidget 
         mCaptureButton.setText(getContext().getString(R.string.capture_image));
     }
 
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
+    }
+
 
     @Override
     public IAnswerData getAnswer() {

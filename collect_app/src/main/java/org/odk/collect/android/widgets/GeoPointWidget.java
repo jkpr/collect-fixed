@@ -16,6 +16,7 @@ package org.odk.collect.android.widgets;
 
 import java.text.DecimalFormat;
 
+import android.annotation.SuppressLint;
 import android.widget.*;
 import org.javarosa.core.model.data.GeoPointData;
 import org.javarosa.core.model.data.IAnswerData;
@@ -42,6 +43,8 @@ import android.view.inputmethod.InputMethodManager;
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
+
+@SuppressLint("ViewConstructor")
 public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 	public static final String LOCATION = "gp";
 	public static final String ACCURACY_THRESHOLD = "accuracyThreshold";
@@ -261,6 +264,21 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 		mStringAnswer.setText(null);
 		mAnswerDisplay.setText(null);
 		updateButtonLabelsAndVisibility(false);
+	}
+
+	@Override
+	public void waitForData() {
+
+	}
+
+	@Override
+	public void cancelWaitingForData() {
+
+	}
+
+	@Override
+	public boolean isWaitingForData() {
+		return false;
 	}
 
 	@Override

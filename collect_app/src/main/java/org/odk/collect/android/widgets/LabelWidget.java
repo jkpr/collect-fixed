@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.view.*;
 import android.widget.*;
 import org.javarosa.core.model.SelectChoice;
@@ -49,6 +50,7 @@ import android.widget.ImageView.ScaleType;
  * 
  * @author Jeff Beorse
  */
+@SuppressLint("ViewConstructor")
 public class LabelWidget extends QuestionWidget {
     private static final String t = "LabelWidget";
 
@@ -201,6 +203,21 @@ public class LabelWidget extends QuestionWidget {
     @Override
     public void clearAnswer() {
         // Do nothing, no answers to clear
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

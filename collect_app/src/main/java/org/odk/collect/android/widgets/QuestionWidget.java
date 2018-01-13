@@ -17,6 +17,9 @@ package org.odk.collect.android.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+//import android.support.v4.content.ContextCompat;
+import android.content.res.Resources;
+import android.support.v4.content.ContextCompat;
 import android.text.method.LinkMovementMethod;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
@@ -33,6 +36,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.os.Bundle;
+import android.support.annotation.IdRes;
+//import android.support.v4.content.ContextCompat;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.TypedValue;
@@ -40,20 +49,34 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
+import org.odk.collect.android.R;
+import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.application.Collect;
+import org.odk.collect.android.database.ActivityLogger;
+import org.odk.collect.android.exception.JavaRosaException;
 import org.odk.collect.android.listeners.AudioPlayListener;
+import org.odk.collect.android.logic.FormController;
 import org.odk.collect.android.utilities.TextUtils;
+import org.odk.collect.android.utilities.ViewIds;
 import org.odk.collect.android.views.MediaLayout;
+import org.odk.collect.android.widgets.interfaces.BaseImageWidget;
+import org.odk.collect.android.widgets.interfaces.ButtonWidget;
+import org.odk.collect.android.widgets.interfaces.Widget;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class QuestionWidget extends RelativeLayout implements AudioPlayListener {
+public abstract class QuestionWidget
+        extends RelativeLayout
+        implements Widget, AudioPlayListener {
+
 
     @SuppressWarnings("unused")
     private final static String t = "QuestionWidget";
@@ -184,8 +207,9 @@ public abstract class QuestionWidget extends RelativeLayout implements AudioPlay
         return mPrompt;
     }
 
-    public MediaLayout getQuestionMediaView () {
-        return mQuestionMediaLayout;
+
+    public FormEntryPrompt getFormEntryPrompt() {
+        return mPrompt;
     }
 
     // http://code.google.com/p/android/issues/detail?id=8488
@@ -378,4 +402,95 @@ public abstract class QuestionWidget extends RelativeLayout implements AudioPlay
             mPlayer.reset();
         }
     }
+
+    protected Button getSimpleButton(String text, @IdRes final int withId) {
+        final QuestionWidget questionWidget = this;
+        final Button button = new Button(getContext());
+
+        button.setId(withId);
+        button.setText(text);
+        button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
+        button.setPadding(20, 20, 20, 20);
+
+        TableLayout.LayoutParams params = new TableLayout.LayoutParams();
+        params.setMargins(7, 5, 7, 5);
+
+        button.setLayoutParams(params);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (button.isClickable()) {
+                    disableViewForOneSecond(button);
+                    ((ButtonWidget) questionWidget).onButtonClick(withId);
+                }
+            }
+        });
+        return button;
+    }
+
+    protected Button getSimpleButton(@IdRes int id) {
+        return getSimpleButton(null, id);
+    }
+
+    protected Button getSimpleButton(String text) {
+        return getSimpleButton(text, R.id.simple_button);
+    }
+
+    protected TextView getCenteredAnswerTextView() {
+        TextView textView = getAnswerTextView();
+        textView.setGravity(Gravity.CENTER);
+
+        return textView;
+    }
+
+    protected TextView getAnswerTextView() {
+        TextView textView = new TextView(getContext());
+
+        textView.setId(R.id.answer_text);
+        textView.setTextColor(getResources().getColor(R.color.primaryTextColor));
+//        textView.setTextColor(ContextCompat.getColor(getContext(), R.color.primaryTextColor));
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
+        textView.setPadding(20, 20, 20, 20);
+
+        return textView;
+    }
+
+    protected ImageView getAnswerImageView(Bitmap bitmap) {
+        final QuestionWidget questionWidget = this;
+        final ImageView imageView = new ImageView(getContext());
+        imageView.setId(ViewIds.generateViewId());
+        imageView.setPadding(10, 10, 10, 10);
+        imageView.setAdjustViewBounds(true);
+        imageView.setImageBitmap(bitmap);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (questionWidget instanceof BaseImageWidget) {
+                    if (imageView.isClickable()) {
+                        disableViewForOneSecond(imageView);
+                        ((BaseImageWidget) questionWidget).onImageClick();
+                    }
+                }
+            }
+        });
+        return imageView;
+    }
+
+    // This method is used to avoid opening more than one dialog or activity when user quickly clicks the button several times:
+    // https://github.com/opendatakit/collect/issues/1624
+    protected void disableViewForOneSecond(final View view) {
+        view.setClickable(false);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                view.setClickable(true);
+            }
+        }, 500);
+    }
+
+    public int getAnswerFontSize() {
+        return mQuestionFontsize + 2;
+    }
+
 }

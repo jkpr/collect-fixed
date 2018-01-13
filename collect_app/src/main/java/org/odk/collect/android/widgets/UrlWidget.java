@@ -14,6 +14,7 @@
 
 package org.odk.collect.android.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -33,6 +34,7 @@ import org.odk.collect.android.application.Collect;
  * 
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
+@SuppressLint("ViewConstructor")
 public class UrlWidget extends QuestionWidget {
     private Button mOpenUrlButton;
     private TextView mStringAnswer;
@@ -93,6 +95,21 @@ public class UrlWidget extends QuestionWidget {
     @Override
     public void clearAnswer() {
         Toast.makeText(getContext(), "URL is readonly", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
     @Override

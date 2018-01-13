@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.view.*;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
@@ -59,6 +60,7 @@ import android.widget.TextView;
  * 
  * @author Jeff Beorse (jeff@beorse.net)
  */
+@SuppressLint("ViewConstructor")
 public class ListMultiWidget extends QuestionWidget {
     private static final String t = "ListMultiWidget";
 
@@ -273,6 +275,21 @@ public class ListMultiWidget extends QuestionWidget {
                 c.setChecked(false);
             }
         }
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
 

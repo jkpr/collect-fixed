@@ -139,6 +139,21 @@ public class AutoCompleteWidget extends QuestionWidget {
         autocomplete.setText("");
     }
 
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
+    }
+
 
     @Override
     public void setFocus(Context context) {

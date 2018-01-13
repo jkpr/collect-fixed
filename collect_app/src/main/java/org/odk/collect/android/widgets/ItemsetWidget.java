@@ -32,6 +32,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.database.ItemsetDbAdapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
@@ -48,6 +49,7 @@ import android.widget.TextView;
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
+@SuppressLint("ViewConstructor")
 public class ItemsetWidget extends QuestionWidget implements
         android.widget.CompoundButton.OnCheckedChangeListener {
 
@@ -261,6 +263,21 @@ public class ItemsetWidget extends QuestionWidget implements
     public void clearAnswer() {
         mButtons.clearCheck();
         mAnswer = null;
+    }
+
+    @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
     }
 
     @Override

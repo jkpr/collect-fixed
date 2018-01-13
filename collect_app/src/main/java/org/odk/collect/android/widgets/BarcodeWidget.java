@@ -110,6 +110,21 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 	}
 
 	@Override
+	public void waitForData() {
+
+	}
+
+	@Override
+	public void cancelWaitingForData() {
+
+	}
+
+	@Override
+	public boolean isWaitingForData() {
+		return false;
+	}
+
+	@Override
 	public IAnswerData getAnswer() {
 		String s = mStringAnswer.getText().toString();
 		if (s == null || s.equals("")) {

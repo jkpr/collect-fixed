@@ -261,7 +261,22 @@ public class EthiopianDateWidget extends QuestionWidget{
 			updateGregorianDateHelperDisplay();
 	    }
 
-	    /**
+	@Override
+	public void waitForData() {
+
+	}
+
+	@Override
+	public void cancelWaitingForData() {
+
+	}
+
+	@Override
+	public boolean isWaitingForData() {
+		return false;
+	}
+
+	/**
 	     * Return the date for storing in ODK 
 	     */
 	    @Override
