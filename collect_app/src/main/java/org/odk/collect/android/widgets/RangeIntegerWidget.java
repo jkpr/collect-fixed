@@ -16,12 +16,14 @@
 
 package org.odk.collect.android.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.form.api.FormEntryPrompt;
 
+@SuppressLint("ViewConstructor")
 public class RangeIntegerWidget extends RangeWidget {
 
     public RangeIntegerWidget(Context context, FormEntryPrompt prompt) {
@@ -34,9 +36,27 @@ public class RangeIntegerWidget extends RangeWidget {
     }
 
     @Override
+    public void waitForData() {
+
+    }
+
+    @Override
+    public void cancelWaitingForData() {
+
+    }
+
+    @Override
+    public boolean isWaitingForData() {
+        return false;
+    }
+
+    @Override
     protected void setUpActualValueLabel() {
         String value = actualValue != null ? String.valueOf(actualValue.intValue()) : "";
-        currentValue.setText(value);
+
+        if (currentValue != null) {
+            currentValue.setText(value);
+        }
     }
 
     @Override

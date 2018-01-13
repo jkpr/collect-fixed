@@ -16,28 +16,34 @@
 
 package org.odk.collect.android.widgets;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
-import android.util.TypedValue;
+import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.javarosa.core.model.RangeQuestion;
+import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.odk.collect.android.R;
 import org.odk.collect.android.activities.FormEntryActivity;
 import org.odk.collect.android.fragments.dialogs.NumberPickerDialog;
 import org.odk.collect.android.utilities.ToastUtils;
+import org.odk.collect.android.widgets.interfaces.ButtonWidget;
 
 import java.math.BigDecimal;
 
 import timber.log.Timber;
 
-public abstract class RangeWidget extends QuestionWidget {
+@SuppressWarnings("BigDecimalMethodWithoutRoundingCalled")
+public abstract class RangeWidget extends QuestionWidget implements ButtonWidget, SeekBar.OnSeekBarChangeListener {
 
     private static final String VERTICAL_APPEARANCE = "vertical";
     private static final String NO_TICKS_APPEARANCE = "no-ticks";
@@ -49,15 +55,14 @@ public abstract class RangeWidget extends QuestionWidget {
     protected BigDecimal actualValue;
 
     protected String[] displayedValuesForNumberPicker;
-
-    private int progress;
     protected int elementCount;
 
-    private SeekBar seekBar;
-
+    @Nullable
     protected TextView currentValue;
 
-    private View view;
+    private int progress;
+    private SeekBar seekBar;
+    private LinearLayout view;
 
     private boolean isPickerAppearance;
     private boolean suppressFlingGesture;
@@ -83,6 +88,11 @@ public abstract class RangeWidget extends QuestionWidget {
     }
 
     @Override
+    public IAnswerData getAnswer() {
+        return null;
+    }
+
+    @Override
     public void clearAnswer() {
         setUpNullValue();
     }
@@ -104,6 +114,11 @@ public abstract class RangeWidget extends QuestionWidget {
         return suppressFlingGesture;
     }
 
+    @Override
+    public void onButtonClick(int buttonId) {
+        showNumberPickerDialog();
+    }
+
     private void setUpLayoutElements() {
         if (!isPickerAppearance) {
             TextView minValue = (TextView) view.findViewById(R.id.min_value);
@@ -117,8 +132,8 @@ public abstract class RangeWidget extends QuestionWidget {
 
         if (isWidgetValid()) {
             elementCount = rangeEnd.subtract(rangeStart).abs().divide(rangeStep).intValue();
-            if (getPrompt().getAnswerValue() != null) {
-                actualValue = new BigDecimal(getPrompt().getAnswerValue().getValue().toString());
+            if (getFormEntryPrompt().getAnswerValue() != null) {
+                actualValue = new BigDecimal(getFormEntryPrompt().getAnswerValue().getValue().toString());
                 progress = actualValue.subtract(rangeStart).abs().divide(rangeStep).intValue();
             } else {
                 setUpNullValue();
@@ -129,8 +144,8 @@ public abstract class RangeWidget extends QuestionWidget {
                 setUpSeekBar();
             } else {
                 setUpDisplayedValuesForNumberPicker();
-                answerTextView.setText(getPrompt().getAnswerValue() != null ? String.valueOf(actualValue) : getContext().getString(R.string.no_value_selected));
-                pickerButton.setText(getPrompt().getAnswerValue() != null ? getContext().getString(R.string.edit_value) : getContext().getString(R.string.select_value));
+                answerTextView.setText(getFormEntryPrompt().getAnswerValue() != null ? String.valueOf(actualValue) : getContext().getString(R.string.no_value_selected));
+                pickerButton.setText(getFormEntryPrompt().getAnswerValue() != null ? getContext().getString(R.string.edit_value) : getContext().getString(R.string.select_value));
             }
         }
     }
@@ -153,7 +168,7 @@ public abstract class RangeWidget extends QuestionWidget {
     }
 
     private void setUpWidgetParameters() {
-        RangeQuestion rangeQuestion = (RangeQuestion) getPrompt().getQuestion();
+        RangeQuestion rangeQuestion = (RangeQuestion) getFormEntryPrompt().getQuestion();
 
         rangeStart = rangeQuestion.getRangeStart();
         rangeEnd = rangeQuestion.getRangeEnd();
@@ -163,28 +178,9 @@ public abstract class RangeWidget extends QuestionWidget {
     private void setUpSeekBar() {
         seekBar.setMax(elementCount);
         seekBar.setProgress(progress);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                suppressFlingGesture = false;
-            }
+        seekBar.setOnSeekBarChangeListener(this);
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                suppressFlingGesture = true;
-            }
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (rangeStart.compareTo(rangeEnd) == -1) {
-                    actualValue = rangeStart.add(new BigDecimal(progress).multiply(rangeStep));
-                } else {
-                    actualValue = rangeStart.subtract(new BigDecimal(progress).multiply(rangeStep));
-                }
-                setUpActualValueLabel();
-            }
-        });
-        seekBar.setOnTouchListener(new SeekBar.OnTouchListener() {
+        seekBar.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 seekBar.getThumb().mutate().setAlpha(255);
@@ -214,7 +210,8 @@ public abstract class RangeWidget extends QuestionWidget {
 
     private boolean isWidgetValid() {
         boolean result = true;
-        if (rangeStep.compareTo(new BigDecimal(0)) == 0 || rangeEnd.subtract(rangeStart).remainder(rangeStep).compareTo(new BigDecimal(0)) != 0) {
+        if (rangeStep.compareTo(BigDecimal.ZERO) == 0
+                || rangeEnd.subtract(rangeStart).remainder(rangeStep).compareTo(BigDecimal.ZERO) != 0) {
             disableWidget();
             result = false;
         }
@@ -222,47 +219,54 @@ public abstract class RangeWidget extends QuestionWidget {
     }
 
     private void setUpAppearance() {
-        String appearance = getPrompt().getQuestion().getAppearanceAttr();
+        String appearance = getFormEntryPrompt().getQuestion().getAppearanceAttr();
 
-        if (appearance != null && appearance.contains(PICKER_APPEARANCE)) {
-            view = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.button_textview_layout, null);
-            pickerButton = (Button) view.findViewById(R.id.trigger_button);
-            pickerButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showNumberPickerDialog();
-                }
-            });
-            pickerButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, answerFontsize);
-            pickerButton.setText(getContext().getString(R.string.select_value));
-            pickerButton.setPadding(20, 20, 20, 20);
-            answerTextView = (TextView) view.findViewById(R.id.answer_text_view);
-            answerTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, answerFontsize);
-            answerTextView.setPadding(20, 20, 20, 20);
+        if (appearance == null) {
+            loadAppearance(R.layout.range_widget_horizontal, R.id.seek_bar);
+
+        } else if (appearance.contains(PICKER_APPEARANCE)) {
+            pickerButton = getSimpleButton(getContext().getString(R.string.select_value));
+
+            answerTextView = getAnswerTextView();
             isPickerAppearance = true;
-        } else if (appearance != null && appearance.contains(NO_TICKS_APPEARANCE)) {
-            if (appearance.contains(VERTICAL_APPEARANCE)) {
-                view = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.range_widget_vertical, null);
-                seekBar = (SeekBar) view.findViewById(R.id.seek_bar_no_ticks);
-                view.findViewById(R.id.seek_bar).setVisibility(GONE);
-            } else {
-                view = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.range_widget_horizontal, null);
-                seekBar = (SeekBar) view.findViewById(R.id.seek_bar_no_ticks);
-                view.findViewById(R.id.seek_bar).setVisibility(GONE);
-            }
+
+            view = new LinearLayout(getContext());
+            view.setOrientation(LinearLayout.VERTICAL);
+            view.addView(pickerButton);
+            view.addView(answerTextView);
+
         } else {
-            if (appearance != null && appearance.contains(VERTICAL_APPEARANCE)) {
-                view = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.range_widget_vertical, null);
-                seekBar = (SeekBar) view.findViewById(R.id.seek_bar);
-                view.findViewById(R.id.seek_bar_no_ticks).setVisibility(GONE);
-            } else {
-                view = ((Activity) getContext()).getLayoutInflater().inflate(R.layout.range_widget_horizontal, null);
-                seekBar = (SeekBar) view.findViewById(R.id.seek_bar);
-                view.findViewById(R.id.seek_bar_no_ticks).setVisibility(GONE);
-            }
+            @LayoutRes int layoutId = appearance.contains(VERTICAL_APPEARANCE)
+                    ? R.layout.range_widget_vertical
+                    : R.layout.range_widget_horizontal;
+
+            @IdRes int seekBarId = appearance.contains(NO_TICKS_APPEARANCE)
+                    ? R.id.seek_bar_no_ticks
+                    : R.id.seek_bar;
+
+            loadAppearance(layoutId, seekBarId);
         }
 
         setUpLayoutElements();
+    }
+
+    private void loadAppearance(@LayoutRes int layoutId, @IdRes int seekBarId) {
+        view = (LinearLayout) getLayoutInflater().inflate(layoutId, this, false);
+        seekBar = (SeekBar) view.findViewById(seekBarId);
+
+        @IdRes int hiddenSeekBarId;
+        if (seekBarId == R.id.seek_bar) {
+            hiddenSeekBarId = R.id.seek_bar_no_ticks;
+
+        } else if (seekBarId == R.id.seek_bar_no_ticks) {
+            hiddenSeekBarId = R.id.seek_bar;
+
+        } else {
+            Timber.w("Unknown SeekBar ID.");
+            return;
+        }
+
+        view.findViewById(hiddenSeekBarId).setVisibility(GONE);
     }
 
     public void setNumberPickerValue(int value) {
@@ -282,13 +286,59 @@ public abstract class RangeWidget extends QuestionWidget {
         NumberPickerDialog dialog = NumberPickerDialog.newInstance(getId(), displayedValuesForNumberPicker, progress);
 
         try {
-            dialog.show(((FormEntryActivity) getContext()).getSupportFragmentManager(), NumberPickerDialog.NUMBER_PICKER_DIALOG_TAG);
+            dialog.show(((FormEntryActivity) getContext()).getFragmentManager(), NumberPickerDialog.NUMBER_PICKER_DIALOG_TAG);
         } catch (ClassCastException e) {
             Timber.i(e);
         }
     }
 
+    private LayoutInflater layoutInflater = null;
+
+    // For testing purposes only:
+    void setLayoutInflater(LayoutInflater layoutInflater) {
+        this.layoutInflater = layoutInflater;
+    }
+
+    private LayoutInflater getLayoutInflater() {
+
+        // Only for testing purposes, this shouldn't actually be cached:
+        if (this.layoutInflater != null) {
+            return layoutInflater;
+        }
+
+        return LayoutInflater.from(getContext());
+    }
+
     protected abstract void setUpActualValueLabel();
 
     protected abstract void setUpDisplayedValuesForNumberPicker();
+
+    public SeekBar getSeekBar() {
+        return seekBar;
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        suppressFlingGesture = false;
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+        suppressFlingGesture = true;
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (rangeStart.compareTo(rangeEnd) == -1) {
+            actualValue = rangeStart.add(new BigDecimal(progress).multiply(rangeStep));
+        } else {
+            actualValue = rangeStart.subtract(new BigDecimal(progress).multiply(rangeStep));
+        }
+
+        setUpActualValueLabel();
+    }
+
+    public int getElementCount() {
+        return elementCount;
+    }
 }
