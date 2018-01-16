@@ -22,11 +22,11 @@ android {
     buildToolsVersion(buildTools)
 
     defaultConfig {
-        applicationId("org.odk.collect.android")
+        applicationId("org.pma2020.collect.android")
         minSdkVersion(8)
         targetSdkVersion(8)
-        versionCode(1058)
-        versionName("1.4.8d")
+        versionCode(1059)
+        versionName("1.4.8e")
     }
 
     buildTypes {
@@ -52,6 +52,7 @@ android {
         sourceCompatibility javaVersion
         targetCompatibility javaVersion
     }
+    buildToolsVersion '26.0.2'
 }
 
 configurations.all {
