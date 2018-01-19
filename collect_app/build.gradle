@@ -24,13 +24,13 @@ android {
     useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
-        applicationId("org.odk.collect.android")
         minSdkVersion(16)
         targetSdkVersion(22)
-        versionCode(1059)
-        versionName("1.4.9a")
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
+        applicationId("org.pma2020.collect.android")
+        versionCode(1059)
+        versionName("1.4.8e")
     }
 
     buildTypes {
