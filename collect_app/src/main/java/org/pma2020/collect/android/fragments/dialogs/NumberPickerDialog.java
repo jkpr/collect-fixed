@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.odk.collect.android.fragments.dialogs;
+package org.pma2020.collect.android.fragments.dialogs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -29,7 +29,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
 
-import org.odk.collect.android.R;
+import org.pma2020.collect.android.R;
 
 public class NumberPickerDialog extends DialogFragment {
 

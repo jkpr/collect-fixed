@@ -1,4 +1,4 @@
-package org.odk.collect.android.widgets.interfaces;
+package org.pma2020.collect.android.widgets.interfaces;
 
 /**
  * @author James Knight

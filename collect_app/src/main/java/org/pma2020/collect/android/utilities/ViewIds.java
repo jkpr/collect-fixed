@@ -1,4 +1,4 @@
-package org.odk.collect.android.utilities;
+package org.pma2020.collect.android.utilities;
 
 
 import android.os.Build;

@@ -1,8 +1,8 @@
-package org.odk.collect.android.utilities;
+package org.pma2020.collect.android.utilities;
 
 import android.widget.Toast;
 
-import org.odk.collect.android.application.Collect;
+import org.pma2020.collect.android.application.Collect;
 
 
 public class ToastUtils {

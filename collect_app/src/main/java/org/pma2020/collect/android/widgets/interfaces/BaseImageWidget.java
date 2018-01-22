@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package org.odk.collect.android.widgets.interfaces;
+package org.pma2020.collect.android.widgets.interfaces;
 
-public interface ButtonWidget extends Widget {
-    void onButtonClick(int buttonId);
+public interface BaseImageWidget extends FileWidget {
+    void onImageClick();
 }

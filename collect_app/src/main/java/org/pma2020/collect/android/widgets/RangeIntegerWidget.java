@@ -14,29 +14,25 @@
  * limitations under the License.
  */
 
-package org.odk.collect.android.widgets;
+package org.pma2020.collect.android.widgets;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 
-import org.javarosa.core.model.data.DecimalData;
 import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.IntegerData;
 import org.javarosa.form.api.FormEntryPrompt;
 
-import java.math.BigDecimal;
-
 @SuppressLint("ViewConstructor")
-public class RangeDecimalWidget extends RangeWidget {
+public class RangeIntegerWidget extends RangeWidget {
 
-    public RangeDecimalWidget(Context context, FormEntryPrompt prompt) {
+    public RangeIntegerWidget(Context context, FormEntryPrompt prompt) {
         super(context, prompt);
     }
 
     @Override
     public IAnswerData getAnswer() {
-        return actualValue != null
-                ? new DecimalData(actualValue.doubleValue())
-                : null;
+        return actualValue == null ? null : new IntegerData(actualValue.intValue());
     }
 
     @Override
@@ -56,9 +52,7 @@ public class RangeDecimalWidget extends RangeWidget {
 
     @Override
     protected void setUpActualValueLabel() {
-        String value = actualValue != null
-                ? String.valueOf(actualValue.doubleValue())
-                : "";
+        String value = actualValue != null ? String.valueOf(actualValue.intValue()) : "";
 
         if (currentValue != null) {
             currentValue.setText(value);
@@ -67,33 +61,19 @@ public class RangeDecimalWidget extends RangeWidget {
 
     @Override
     protected void setUpDisplayedValuesForNumberPicker() {
+        int index = 0;
         displayedValuesForNumberPicker = new String[elementCount + 1];
 
-        if (isRangeIncreasing()) {
-            fillDisplayedValuesWithIncreasingValues();
-
+        if (rangeEnd.compareTo(rangeStart) > -1) {
+            for (int i = rangeEnd.intValue(); i >= rangeStart.intValue(); i -= rangeStep.abs().intValue()) {
+                displayedValuesForNumberPicker[index] = String.valueOf(i);
+                index++;
+            }
         } else {
-            fillDisplayedValuesWithDecreasingValues();
-        }
-    }
-
-    private boolean isRangeIncreasing() {
-        return rangeEnd.compareTo(rangeStart) > -1;
-    }
-
-    private void fillDisplayedValuesWithIncreasingValues() {
-        int index = 0;
-        for (BigDecimal i = rangeEnd; i.compareTo(rangeStart) > -1; i = i.subtract(rangeStep.abs())) {
-            displayedValuesForNumberPicker[index] = String.valueOf(i);
-            index++;
-        }
-    }
-
-    private void fillDisplayedValuesWithDecreasingValues() {
-        int index = 0;
-        for (BigDecimal i = rangeEnd; i.compareTo(rangeStart) < 1; i = i.add(rangeStep.abs())) {
-            displayedValuesForNumberPicker[index] = String.valueOf(i);
-            index++;
+            for (int i = rangeEnd.intValue(); i <= rangeStart.intValue(); i += rangeStep.abs().intValue()) {
+                displayedValuesForNumberPicker[index] = String.valueOf(i);
+                index++;
+            }
         }
     }
 }

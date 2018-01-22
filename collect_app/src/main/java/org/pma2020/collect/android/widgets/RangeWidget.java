@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.odk.collect.android.widgets;
+package org.pma2020.collect.android.widgets;
 
 import android.content.Context;
 import android.os.Build;
@@ -32,11 +32,11 @@ import android.widget.TextView;
 import org.javarosa.core.model.RangeQuestion;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
-import org.odk.collect.android.R;
-import org.odk.collect.android.activities.FormEntryActivity;
-import org.odk.collect.android.fragments.dialogs.NumberPickerDialog;
-import org.odk.collect.android.utilities.ToastUtils;
-import org.odk.collect.android.widgets.interfaces.ButtonWidget;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.fragments.dialogs.NumberPickerDialog;
+import org.pma2020.collect.android.utilities.ToastUtils;
+import org.pma2020.collect.android.widgets.interfaces.ButtonWidget;
 
 import java.math.BigDecimal;
 
