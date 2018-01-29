@@ -14,12 +14,26 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.annotation.SuppressLint;
-import android.view.*;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Typeface;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.SelectMultiData;
@@ -34,20 +48,11 @@ import org.pma2020.collect.android.application.Collect;
 import org.pma2020.collect.android.external.ExternalDataUtil;
 import org.pma2020.collect.android.external.ExternalSelectChoice;
 import org.pma2020.collect.android.utilities.FileUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Typeface;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ListMultiWidget handles multiple selection fields using check boxes. The check boxes are aligned
@@ -88,7 +93,6 @@ public class ListMultiWidget extends QuestionWidget {
             mItems = prompt.getSelectChoices();
         }
         mCheckboxes = new ArrayList<CheckBox>();
-        mPrompt = prompt;
 
         // Layout holds the horizontal list of buttons
         LinearLayout buttonLayout = new LinearLayout(context);
@@ -102,7 +106,7 @@ public class ListMultiWidget extends QuestionWidget {
             for (int i = 0; i < mItems.size(); i++) {
                 CheckBox c = new CheckBox(getContext());
                 c.setTag(Integer.valueOf(i));
-                c.setId(QuestionWidget.newUniqueId());
+                c.setId(ViewIds.generateViewId());
                 c.setFocusable(!prompt.isReadOnly());
                 c.setEnabled(!prompt.isReadOnly());
                 for (int vi = 0; vi < ve.size(); vi++) {
@@ -119,15 +123,15 @@ public class ListMultiWidget extends QuestionWidget {
                 c.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if (!mCheckboxInit && mPrompt.isReadOnly()) {
+                        if (!mCheckboxInit && getFormEntryPrompt().isReadOnly()) {
                             if (buttonView.isChecked()) {
                                 buttonView.setChecked(false);
                                	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.deselect", 
-                            			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
+                            			mItems.get((Integer)buttonView.getTag()).getValue(), getFormEntryPrompt().getIndex());
                             } else {
                                 buttonView.setChecked(true);
                                	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.select", 
-                            			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
+                            			mItems.get((Integer)buttonView.getTag()).getValue(), getFormEntryPrompt().getIndex());
                             }
                         }
                     }
@@ -144,7 +148,7 @@ public class ListMultiWidget extends QuestionWidget {
                 ImageView mImageView = null;
                 TextView mMissingImage = null;
 
-                final int labelId = QuestionWidget.newUniqueId();
+                final int labelId = ViewIds.generateViewId();
 
                 // Now set up the image view
                 String errorMsg = null;
@@ -209,7 +213,7 @@ public class ListMultiWidget extends QuestionWidget {
                 // button because it aligns horizontally, and we want the label on top
                 TextView label = new TextView(getContext());
                 label.setText(prompt.getSelectChoiceText(mItems.get(i)));
-                label.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+                label.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
                 label.setGravity(Gravity.CENTER_HORIZONTAL);
                 if (!displayLabel) {
                     label.setVisibility(View.GONE);
@@ -278,22 +282,6 @@ public class ListMultiWidget extends QuestionWidget {
     }
 
     @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
-
-    @Override
     public IAnswerData getAnswer() {
         List<Selection> vc = new ArrayList<Selection>();
         for (int i = 0; i < mCheckboxes.size(); i++) {
@@ -328,10 +316,10 @@ public class ListMultiWidget extends QuestionWidget {
         // Add the text view. Textview always exists, regardless of whether there's text.
     	TextView questionText = new TextView(getContext());
         questionText.setText(p.getLongText());
-        questionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
+        questionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getQuestionFontSize());
         questionText.setTypeface(null, Typeface.BOLD);
         questionText.setPadding(0, 0, 0, 7);
-        questionText.setId(QuestionWidget.newUniqueId()); // assign random id
+        questionText.setId(ViewIds.generateViewId()); // assign random id
 
         // Wrap to the size of the parent view
         questionText.setHorizontallyScrolling(false);
@@ -368,7 +356,7 @@ public class ListMultiWidget extends QuestionWidget {
         center = new View(getContext());
         RelativeLayout.LayoutParams centerParams = new RelativeLayout.LayoutParams(0, 0);
         centerParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        center.setId(QuestionWidget.newUniqueId());
+        center.setId(ViewIds.generateViewId());
         addView(center, centerParams);
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

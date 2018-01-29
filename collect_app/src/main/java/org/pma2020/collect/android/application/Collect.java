@@ -14,8 +14,22 @@
 
 package org.pma2020.collect.android.application;
 
-import java.io.File;
+import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Environment;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
+import android.support.multidex.MultiDex;
 
+import org.opendatakit.httpclientandroidlib.client.CookieStore;
+import org.opendatakit.httpclientandroidlib.client.CredentialsProvider;
+import org.opendatakit.httpclientandroidlib.client.protocol.ClientContext;
+import org.opendatakit.httpclientandroidlib.impl.client.BasicCookieStore;
+import org.opendatakit.httpclientandroidlib.protocol.BasicHttpContext;
+import org.opendatakit.httpclientandroidlib.protocol.HttpContext;
 import org.pma2020.collect.android.R;
 import org.pma2020.collect.android.database.ActivityLogger;
 import org.pma2020.collect.android.external.ExternalDataManager;
@@ -23,21 +37,8 @@ import org.pma2020.collect.android.logic.FormController;
 import org.pma2020.collect.android.logic.PropertyManager;
 import org.pma2020.collect.android.preferences.PreferencesActivity;
 import org.pma2020.collect.android.utilities.AgingCredentialsProvider;
-import org.opendatakit.httpclientandroidlib.client.CookieStore;
-import org.opendatakit.httpclientandroidlib.client.CredentialsProvider;
-import org.opendatakit.httpclientandroidlib.client.protocol.ClientContext;
-import org.opendatakit.httpclientandroidlib.impl.client.BasicCookieStore;
-import org.opendatakit.httpclientandroidlib.protocol.BasicHttpContext;
-import org.opendatakit.httpclientandroidlib.protocol.HttpContext;
 
-import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Environment;
-import android.preference.PreferenceManager;
-import android.support.multidex.MultiDex;
+import java.io.File;
 
 /**
  * Extends the Application class to implement
@@ -69,6 +70,8 @@ public class Collect extends Application {
     private ExternalDataManager externalDataManager;
 
     private static Collect singleton = null;
+
+    private static long lastClickTime;
 
     public static Collect getInstance() {
         return singleton;
@@ -229,6 +232,17 @@ public class Collect extends Application {
         
         mActivityLogger = new ActivityLogger(
                 mgr.getSingularProperty(PropertyManager.DEVICE_ID_PROPERTY));
+    }
+
+    // Preventing multiple clicks, using threshold of 500 ms
+    public static boolean allowClick() {
+        long elapsedRealtime = SystemClock.elapsedRealtime();
+        boolean allowClick = (lastClickTime == 0 || lastClickTime == elapsedRealtime) // just for tests
+                || elapsedRealtime - lastClickTime > 500;
+        if (allowClick) {
+            lastClickTime = elapsedRealtime;
+        }
+        return allowClick;
     }
 
     @Override

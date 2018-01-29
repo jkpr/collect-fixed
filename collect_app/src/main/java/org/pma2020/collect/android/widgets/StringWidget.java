@@ -14,11 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.application.Collect;
-
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -31,6 +26,12 @@ import android.view.KeyEvent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TableLayout;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 /**
  * The most basic widget that allows for entry of any text.
@@ -52,10 +53,10 @@ public class StringWidget extends QuestionWidget {
     protected StringWidget(Context context, FormEntryPrompt prompt, boolean readOnlyOverride, boolean derived) {
         super(context, prompt);
         mAnswer = new EditText(context);
-        mAnswer.setId(QuestionWidget.newUniqueId());
+        mAnswer.setId(ViewIds.generateViewId());
         mReadOnly = prompt.isReadOnly() || readOnlyOverride;
 
-        mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+        mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 
         TableLayout.LayoutParams params = new TableLayout.LayoutParams();
 
@@ -113,7 +114,7 @@ public class StringWidget extends QuestionWidget {
 			public void afterTextChanged(Editable s) {
 				if (!s.toString().equals(oldText)) {
 					Collect.getInstance().getActivityLogger()
-						.logInstanceAction(this, "answerTextChanged", s.toString(),	getPrompt().getIndex());
+						.logInstanceAction(this, "answerTextChanged", s.toString(),	getFormEntryPrompt().getIndex());
 				}
 			}
 
@@ -133,22 +134,6 @@ public class StringWidget extends QuestionWidget {
     public void clearAnswer() {
         mAnswer.setText(null);
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public IAnswerData getAnswer() {

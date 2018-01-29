@@ -14,21 +14,7 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.io.File;
-
 import android.annotation.SuppressLint;
-import android.view.ViewGroup;
-import android.widget.*;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.activities.DrawActivity;
-import org.pma2020.collect.android.activities.FormEntryActivity;
-import org.pma2020.collect.android.application.Collect;
-import org.pma2020.collect.android.utilities.FileUtils;
-import org.pma2020.collect.android.utilities.MediaUtils;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
@@ -43,6 +29,25 @@ import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.activities.DrawActivity;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.FileUtils;
+import org.pma2020.collect.android.utilities.MediaUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
+
+import java.io.File;
 
 /**
  * Signature widget.
@@ -70,14 +75,14 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
         params.setMargins(7, 5, 7, 5);
 		
         mErrorTextView = new TextView(context);
-        mErrorTextView.setId(QuestionWidget.newUniqueId());
+        mErrorTextView.setId(ViewIds.generateViewId());
         mErrorTextView.setText("Selected file is not a valid image");
 
         // setup Blank Image Button
 		mSignButton = new Button(getContext());
-		mSignButton.setId(QuestionWidget.newUniqueId());
+		mSignButton.setId(ViewIds.generateViewId());
         mSignButton.setText(getContext().getString(R.string.sign_button));
-        mSignButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+        mSignButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
         mSignButton.setPadding(20, 20, 20, 20);
         mSignButton.setEnabled(!prompt.isReadOnly());
         mSignButton.setLayoutParams(params);
@@ -88,7 +93,7 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "signButton", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
             	launchSignatureActivity();
             }
         });
@@ -112,7 +117,7 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
         // Only add the imageView if the user has signed
         if (mBinaryName != null) {
             mImageView = new ImageView(getContext());
-            mImageView.setId(QuestionWidget.newUniqueId());
+            mImageView.setId(ViewIds.generateViewId());
             Display display =
                 ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
                         .getDefaultDisplay();
@@ -137,7 +142,7 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
                 @Override
                 public void onClick(View v) {
                    	Collect.getInstance().getActivityLogger().logInstanceAction(this, "viewImage", 
-                			"click", mPrompt.getIndex());
+                			"click", getFormEntryPrompt().getIndex());
                    	launchSignatureActivity();
                 }
             });
@@ -161,7 +166,7 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
     			Uri.fromFile(new File(Collect.TMPFILE_PATH)));
     	
     	try {
-	    	Collect.getInstance().getFormController().setIndexWaitingForData(mPrompt.getIndex());
+	    	Collect.getInstance().getFormController().setIndexWaitingForData(getFormEntryPrompt().getIndex());
 	    	((Activity) getContext()).startActivityForResult(i, FormEntryActivity.SIGNATURE_CAPTURE);
     	}
     	catch (ActivityNotFoundException e) {
@@ -193,22 +198,6 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
         // reset buttons
         mSignButton.setText(getContext().getString(R.string.sign_button));
 	}
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
 	public IAnswerData getAnswer() {
@@ -263,7 +252,7 @@ public class SignatureWidget extends QuestionWidget implements IBinaryWidget {
 
 	@Override
 	public boolean isWaitingForBinaryData() {
-		return mPrompt.getIndex().equals(Collect.getInstance().getFormController().getIndexWaitingForData());
+		return getFormEntryPrompt().getIndex().equals(Collect.getInstance().getFormController().getIndexWaitingForData());
 	}
 
 	@Override

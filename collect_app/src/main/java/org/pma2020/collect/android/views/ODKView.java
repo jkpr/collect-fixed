@@ -14,14 +14,25 @@
 
 package org.pma2020.collect.android.views;
 
-import java.io.Serializable;
-import java.util.*;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.*;
+import android.os.Handler;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnLongClickListener;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import org.javarosa.core.model.Constants;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.IFormElement;
@@ -37,18 +48,17 @@ import org.pma2020.collect.android.exception.ExternalParamsException;
 import org.pma2020.collect.android.exception.JavaRosaException;
 import org.pma2020.collect.android.external.ExternalAppsUtils;
 import org.pma2020.collect.android.logic.FormController;
+import org.pma2020.collect.android.utilities.ViewIds;
 import org.pma2020.collect.android.widgets.IBinaryWidget;
 import org.pma2020.collect.android.widgets.QuestionWidget;
 import org.pma2020.collect.android.widgets.WidgetFactory;
 
-import android.content.Context;
-import android.os.Handler;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnLongClickListener;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is
@@ -112,7 +122,7 @@ public class ODKView extends ScrollView implements OnLongClickListener {
 
                 // set button formatting
                 Button mLaunchIntentButton = new Button(getContext());
-                mLaunchIntentButton.setId(QuestionWidget.newUniqueId());
+                mLaunchIntentButton.setId(ViewIds.generateViewId());
                 mLaunchIntentButton.setText(buttonText);
                 mLaunchIntentButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, Collect.getQuestionFontsize() + 2);
                 mLaunchIntentButton.setPadding(20, 20, 20, 20);
@@ -152,7 +162,7 @@ public class ODKView extends ScrollView implements OnLongClickListener {
                                     e.getMessage(), Toast.LENGTH_SHORT)
                                     .show();
                         } catch (ActivityNotFoundException e) {
-                            Log.e("ActivityNotFoundException", e.getMessage(), e);
+                            Log.e("ActivityNotFoundExcept", e.getMessage(), e);
 
                             Toast.makeText(getContext(),
                                     errorString, Toast.LENGTH_SHORT)
@@ -200,7 +210,7 @@ public class ODKView extends ScrollView implements OnLongClickListener {
         // see if there is an autoplay option. 
         // Only execute it during forward swipes through the form 
         if ( advancingPage && widgets.size() == 1 ) {
-	        final String playOption = widgets.get(0).getPrompt().getFormElement().getAdditionalAttribute(null, "autoplay");
+	        final String playOption = widgets.get(0).getFormEntryPrompt().getFormElement().getAdditionalAttribute(null, "autoplay");
 	        if ( playOption != null ) {
 	        	h = new Handler();
 	        	h.postDelayed(new Runnable() {
@@ -215,6 +225,15 @@ public class ODKView extends ScrollView implements OnLongClickListener {
 					}, 150);
 	        }
         }
+    }
+
+    public Bundle getState() {
+        Bundle state = new Bundle();
+        for (QuestionWidget qw : getWidgets()) {
+            state.putAll(qw.getCurrentState());
+        }
+
+        return state;
     }
     
     /**
@@ -244,7 +263,7 @@ public class ODKView extends ScrollView implements OnLongClickListener {
              * QuestionWidget has the answer the user has entered.
              */
             QuestionWidget q = i.next();
-            FormEntryPrompt p = q.getPrompt();
+            FormEntryPrompt p = q.getFormEntryPrompt();
             answers.put(p.getIndex(), q.getAnswer());
         }
 
@@ -326,7 +345,7 @@ public class ODKView extends ScrollView implements OnLongClickListener {
         Set<String> keys = bundle.keySet();
         for (String key : keys) {
             for (QuestionWidget questionWidget : widgets) {
-                FormEntryPrompt prompt = questionWidget.getPrompt();
+                FormEntryPrompt prompt = questionWidget.getFormEntryPrompt();
                 TreeReference treeReference = (TreeReference) prompt.getFormElement().getBind().getReference();
                 if (treeReference.getNameLast().equals(key)) {
 
@@ -381,7 +400,7 @@ public class ODKView extends ScrollView implements OnLongClickListener {
     public boolean clearAnswer() {
         // If there's only one widget, clear the answer.
         // If there are more, then force a long-press to clear the answer.
-        if (widgets.size() == 1 && !widgets.get(0).getPrompt().isReadOnly()) {
+        if (widgets.size() == 1 && !widgets.get(0).getFormEntryPrompt().isReadOnly()) {
             widgets.get(0).clearAnswer();
             return true;
         } else {

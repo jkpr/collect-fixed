@@ -37,6 +37,7 @@ import org.pma2020.collect.android.application.Collect;
 import org.pma2020.collect.android.external.ExternalDataUtil;
 import org.pma2020.collect.android.external.ExternalSelectChoice;
 import org.pma2020.collect.android.utilities.TextUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
 import org.pma2020.collect.android.views.MediaLayout;
 
 import java.util.ArrayList;
@@ -61,7 +62,6 @@ public class SelectMultiWidget extends QuestionWidget {
     @SuppressWarnings("unchecked")
     public SelectMultiWidget(Context context, FormEntryPrompt prompt) {
         super(context, prompt);
-        mPrompt = prompt;
         mCheckboxes = new ArrayList<CheckBox>();
         playList = new ArrayList<MediaLayout>();
 
@@ -92,10 +92,10 @@ public class SelectMultiWidget extends QuestionWidget {
                 // no checkbox group so id by answer + offset
                 CheckBox c = new CheckBox(getContext());
                 c.setTag(Integer.valueOf(i));
-                c.setId(QuestionWidget.newUniqueId());
+                c.setId(ViewIds.generateViewId());
                 c.setText(choiceDisplayName);
                 c.setMovementMethod(LinkMovementMethod.getInstance());
-                c.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+                c.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
                 c.setFocusable(!prompt.isReadOnly());
                 c.setEnabled(!prompt.isReadOnly());
                 
@@ -112,15 +112,15 @@ public class SelectMultiWidget extends QuestionWidget {
                 c.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if (!mCheckboxInit && mPrompt.isReadOnly()) {
+                        if (!mCheckboxInit && getFormEntryPrompt().isReadOnly()) {
                             if (buttonView.isChecked()) {
                                 buttonView.setChecked(false);
                                	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.deselect", 
-                            			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
+                            			mItems.get((Integer)buttonView.getTag()).getValue(), getFormEntryPrompt().getIndex());
                             } else {
                                 buttonView.setChecked(true);
                                	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.select", 
-                            			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
+                            			mItems.get((Integer)buttonView.getTag()).getValue(), getFormEntryPrompt().getIndex());
                             }
                         }
                     }
@@ -144,7 +144,7 @@ public class SelectMultiWidget extends QuestionWidget {
                 String bigImageURI = null;
                 bigImageURI = prompt.getSpecialFormSelectChoiceText(mItems.get(i), "big-image");
 
-                MediaLayout mediaLayout = new MediaLayout(getContext(), mPlayer);
+                MediaLayout mediaLayout = new MediaLayout(getContext(), getPlayer());
                 mediaLayout.setAVT(prompt.getIndex(), "." + Integer.toString(i), c, audioURI, imageURI, videoURI, bigImageURI);
 
                 playList.add(mediaLayout);
@@ -173,22 +173,6 @@ public class SelectMultiWidget extends QuestionWidget {
     		}
     	}
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public IAnswerData getAnswer() {
@@ -240,7 +224,7 @@ public class SelectMultiWidget extends QuestionWidget {
         }
         // if there's more, set up to play the next item
         if (playcounter < playList.size()) {
-        mPlayer.setOnCompletionListener(new OnCompletionListener() {
+        getPlayer().setOnCompletionListener(new OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 resetQuestionTextColor();
@@ -254,8 +238,8 @@ public class SelectMultiWidget extends QuestionWidget {
         
      } else {
          playcounter = 0;
-         mPlayer.setOnCompletionListener(null);
-         mPlayer.reset();
+         getPlayer().setOnCompletionListener(null);
+         getPlayer().reset();
      }
 
     }
@@ -265,7 +249,7 @@ public class SelectMultiWidget extends QuestionWidget {
     public void playAllPromptText() {
         // set up to play the items when the
         // question text is finished
-        mPlayer.setOnCompletionListener(new OnCompletionListener() {
+        getPlayer().setOnCompletionListener(new OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 resetQuestionTextColor();

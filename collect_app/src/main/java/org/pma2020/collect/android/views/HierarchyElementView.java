@@ -14,16 +14,16 @@
 
 package org.pma2020.collect.android.views;
 
-import org.pma2020.collect.android.logic.HierarchyElement;
-import org.pma2020.collect.android.utilities.TextUtils;
-
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import org.pma2020.collect.android.widgets.QuestionWidget;
+
+import org.pma2020.collect.android.logic.HierarchyElement;
+import org.pma2020.collect.android.utilities.TextUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 public class HierarchyElementView extends RelativeLayout {
 
@@ -39,7 +39,7 @@ public class HierarchyElementView extends RelativeLayout {
 
         mIcon = new ImageView(context);
         mIcon.setImageDrawable(it.getIcon());
-        mIcon.setId(QuestionWidget.newUniqueId());
+        mIcon.setId(ViewIds.generateViewId());
         mIcon.setPadding(0, 0, dipToPx(4), 0);
 
         addView(mIcon, new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
@@ -48,7 +48,7 @@ public class HierarchyElementView extends RelativeLayout {
         mPrimaryTextView = new TextView(context);
         mPrimaryTextView.setTextAppearance(context, android.R.style.TextAppearance_Large);
         setPrimaryText(it.getPrimaryText());
-        mPrimaryTextView.setId(QuestionWidget.newUniqueId());
+        mPrimaryTextView.setId(ViewIds.generateViewId());
         mPrimaryTextView.setGravity(Gravity.CENTER_VERTICAL);
         LayoutParams l =
             new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);

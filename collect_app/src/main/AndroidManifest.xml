@@ -11,7 +11,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="org.pma2020.collect.android"
-    android:versionCode="1059"
+    android:versionCode="1060"
     android:versionName="1.4.8e" >
 
     <uses-feature android:name="android.hardware.location" android:required="false" />

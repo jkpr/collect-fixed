@@ -14,12 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.application.Collect;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.TypedValue;
@@ -28,6 +22,13 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.TextView;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 /**
  * Widget that allows user to scan barcodes and add them to the form.
@@ -54,9 +55,9 @@ public class TriggerWidget extends QuestionWidget {
         mPrompt = prompt;
 
         mTriggerButton = new CheckBox(getContext());
-        mTriggerButton.setId(QuestionWidget.newUniqueId());
+        mTriggerButton.setId(ViewIds.generateViewId());
         mTriggerButton.setText(getContext().getString(R.string.trigger));
-        mTriggerButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+        mTriggerButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
         // mActionButton.setPadding(20, 20, 20, 20);
         mTriggerButton.setEnabled(!prompt.isReadOnly());
 
@@ -76,8 +77,8 @@ public class TriggerWidget extends QuestionWidget {
         });
 
         mStringAnswer = new TextView(getContext());
-        mStringAnswer.setId(QuestionWidget.newUniqueId());
-        mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+        mStringAnswer.setId(ViewIds.generateViewId());
+        mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
         mStringAnswer.setGravity(Gravity.CENTER);
 
         String s = prompt.getAnswerText();
@@ -101,22 +102,6 @@ public class TriggerWidget extends QuestionWidget {
         mStringAnswer.setText(null);
         mTriggerButton.setChecked(false);
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public IAnswerData getAnswer() {

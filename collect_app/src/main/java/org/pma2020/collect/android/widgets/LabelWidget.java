@@ -14,12 +14,23 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.io.File;
-import java.util.List;
-
 import android.annotation.SuppressLint;
-import android.view.*;
-import android.widget.*;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.helper.Selection;
@@ -32,13 +43,10 @@ import org.pma2020.collect.android.R;
 import org.pma2020.collect.android.external.ExternalDataUtil;
 import org.pma2020.collect.android.external.ExternalSelectChoice;
 import org.pma2020.collect.android.utilities.FileUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.ImageView.ScaleType;
+import java.io.File;
+import java.util.List;
 
 /**
  * The Label Widget does not return an answer. The purpose of this widget is to be the top entry in
@@ -89,7 +97,7 @@ public class LabelWidget extends QuestionWidget {
                 ImageView mImageView = null;
                 TextView mMissingImage = null;
 
-                final int labelId = QuestionWidget.newUniqueId();
+                final int labelId = ViewIds.generateViewId();
 
                 // Now set up the image view
                 String errorMsg = null;
@@ -154,7 +162,7 @@ public class LabelWidget extends QuestionWidget {
                 // button because it aligns horizontally, and we want the label on top
                 TextView label = new TextView(getContext());
                 label.setText(prompt.getSelectChoiceText(mItems.get(i)));
-                label.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+                label.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
                 label.setGravity(Gravity.CENTER_HORIZONTAL);
 
                 // answer layout holds the label text/image on top and the radio button on bottom
@@ -204,22 +212,6 @@ public class LabelWidget extends QuestionWidget {
     }
 
     @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
-
-    @Override
     public IAnswerData getAnswer() {
         return null;
     }
@@ -239,7 +231,7 @@ public class LabelWidget extends QuestionWidget {
         center = new View(getContext());
         RelativeLayout.LayoutParams centerParams = new RelativeLayout.LayoutParams(0, 0);
         centerParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        center.setId(QuestionWidget.newUniqueId());
+        center.setId(ViewIds.generateViewId());
         addView(center, centerParams);
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

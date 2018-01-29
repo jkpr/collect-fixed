@@ -14,18 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
-import org.javarosa.core.model.SelectChoice;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.SelectOneData;
-import org.javarosa.core.model.data.helper.Selection;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.javarosa.xpath.expr.XPathFuncExpr;
-import org.pma2020.collect.android.external.ExternalDataUtil;
-
 import android.content.Context;
 import android.graphics.Color;
 import android.view.Gravity;
@@ -35,6 +23,18 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.Toast;
+
+import org.javarosa.core.model.SelectChoice;
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.SelectOneData;
+import org.javarosa.core.model.data.helper.Selection;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.javarosa.xpath.expr.XPathFuncExpr;
+import org.pma2020.collect.android.external.ExternalDataUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * AutoCompleteWidget handles select-one fields using an autocomplete text box. The user types part
@@ -72,8 +72,6 @@ public class AutoCompleteWidget extends QuestionWidget {
             mItems = prompt.getSelectChoices();
         }
 
-        mPrompt = prompt;
-
         choices = new AutoCompleteAdapter(getContext(), android.R.layout.simple_list_item_1);
         autocomplete = new AutoCompleteTextView(getContext());
 
@@ -95,8 +93,8 @@ public class AutoCompleteWidget extends QuestionWidget {
 
         // Fill in answer
         String s = null;
-        if (mPrompt.getAnswerValue() != null) {
-            s = ((Selection) mPrompt.getAnswerValue().getValue()).getValue();
+        if (getFormEntryPrompt().getAnswerValue() != null) {
+            s = ((Selection) getFormEntryPrompt().getAnswerValue().getValue()).getValue();
         }
 
         for (int i = 0; i < mItems.size(); ++i) {
@@ -117,7 +115,7 @@ public class AutoCompleteWidget extends QuestionWidget {
     	clearFocus();
     	String response = autocomplete.getText().toString();
         for (SelectChoice sc : mItems) {
-            if (response.equals(mPrompt.getSelectChoiceText(sc))) {
+            if (response.equals(getFormEntryPrompt().getSelectChoiceText(sc))) {
                 return new SelectOneData(new Selection(sc));
             }
         }
@@ -138,22 +136,6 @@ public class AutoCompleteWidget extends QuestionWidget {
     public void clearAnswer() {
         autocomplete.setText("");
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public void setFocus(Context context) {

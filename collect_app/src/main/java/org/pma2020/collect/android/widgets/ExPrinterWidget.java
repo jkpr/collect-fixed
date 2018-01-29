@@ -14,11 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.application.Collect;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -30,6 +25,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.Toast;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 
 /**
@@ -127,16 +128,16 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
         final String intentName = (attrs.length < 2 || attrs[1].length() == 0) ? "org.opendatakit.sensors.ZebraPrinter" : attrs[1];
         final String buttonText;
         final String errorString;
-    	String v = mPrompt.getSpecialFormQuestionText("buttonText");
+    	String v = getFormEntryPrompt().getSpecialFormQuestionText("buttonText");
     	buttonText = (v != null) ? v : context.getString(R.string.launch_printer);
-    	v = mPrompt.getSpecialFormQuestionText("noPrinterErrorString");
+    	v = getFormEntryPrompt().getSpecialFormQuestionText("noPrinterErrorString");
     	errorString = (v != null) ? v : context.getString(R.string.no_printer);
 
         // set button formatting
         mLaunchIntentButton = new Button(getContext());
-        mLaunchIntentButton.setId(QuestionWidget.newUniqueId());
+        mLaunchIntentButton.setId(ViewIds.generateViewId());
         mLaunchIntentButton.setText(buttonText);
-        mLaunchIntentButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+        mLaunchIntentButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
         mLaunchIntentButton.setPadding(20, 20, 20, 20);
         mLaunchIntentButton.setLayoutParams(params);
 
@@ -144,7 +145,7 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
             @Override
             public void onClick(View v) {
                 try {
-                	Collect.getInstance().getFormController().setIndexWaitingForData(mPrompt.getIndex());
+                	Collect.getInstance().getFormController().setIndexWaitingForData(getFormEntryPrompt().getIndex());
                 	firePrintingActivity(intentName);
                 } catch (ActivityNotFoundException e) {
                 	Collect.getInstance().getFormController().setIndexWaitingForData(null);
@@ -161,10 +162,10 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
 
     protected void firePrintingActivity(String intentName) throws ActivityNotFoundException {
 
-        String s = mPrompt.getAnswerText();
+        String s = getFormEntryPrompt().getAnswerText();
 
        	Collect.getInstance().getActivityLogger().logInstanceAction(this, "launchPrinter",
-       			intentName, mPrompt.getIndex());
+       			intentName, getFormEntryPrompt().getIndex());
        	Intent i = new Intent(intentName);
        	((Activity) getContext()).startActivity(i);
 
@@ -212,24 +213,8 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
     }
 
     @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
-
-    @Override
     public IAnswerData getAnswer() {
-    	return mPrompt.getAnswerValue();
+    	return getFormEntryPrompt().getAnswerValue();
     }
 
 
@@ -250,7 +235,7 @@ public class ExPrinterWidget extends QuestionWidget implements IBinaryWidget {
 
     @Override
     public boolean isWaitingForBinaryData() {
-        return mPrompt.getIndex().equals(Collect.getInstance().getFormController().getIndexWaitingForData());
+        return getFormEntryPrompt().getIndex().equals(Collect.getInstance().getFormController().getIndexWaitingForData());
     }
 
 	@Override

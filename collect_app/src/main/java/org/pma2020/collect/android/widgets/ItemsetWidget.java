@@ -14,9 +14,15 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.database.Cursor;
+import android.view.KeyEvent;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.CompoundButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -31,16 +37,11 @@ import org.javarosa.xpath.parser.XPathSyntaxException;
 import org.pma2020.collect.android.R;
 import org.pma2020.collect.android.application.Collect;
 import org.pma2020.collect.android.database.ItemsetDbAdapter;
+import org.pma2020.collect.android.utilities.ViewIds;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.database.Cursor;
-import android.view.KeyEvent;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.CompoundButton;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.TextView;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * The most basic widget that allows for entry of any text.
@@ -68,7 +69,7 @@ public class ItemsetWidget extends QuestionWidget implements
             boolean derived) {
         super(context, prompt);
         mButtons = new RadioGroup(context);
-        mButtons.setId(QuestionWidget.newUniqueId());
+        mButtons.setId(ViewIds.generateViewId());
         mReadOnly = prompt.isReadOnly() || readOnlyOverride;
         mAnswers = new HashMap<String, String>();
 
@@ -234,7 +235,7 @@ public class ItemsetWidget extends QuestionWidget implements
                         RadioButton rb = new RadioButton(context);
                         rb.setOnCheckedChangeListener(this);
                         rb.setText(label);
-                        rb.setTextSize(mAnswerFontsize);
+                        rb.setTextSize(getAnswerFontSize());
                         mButtons.addView(rb);
                         // have to add it to the radiogroup before checking it,
                         // else it lets two buttons be checked...
@@ -262,21 +263,6 @@ public class ItemsetWidget extends QuestionWidget implements
     public void clearAnswer() {
         mButtons.clearCheck();
         mAnswer = null;
-    }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
     }
 
     @Override

@@ -36,21 +36,6 @@ public class RangeIntegerWidget extends RangeWidget {
     }
 
     @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
-    @Override
     protected void setUpActualValueLabel() {
         String value = actualValue != null ? String.valueOf(actualValue.intValue()) : "";
 

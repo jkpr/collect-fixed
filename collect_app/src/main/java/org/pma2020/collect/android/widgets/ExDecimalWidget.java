@@ -14,15 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.text.NumberFormat;
-
-import org.pma2020.collect.android.external.ExternalAppsUtils;
-import org.javarosa.core.model.data.DecimalData;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.activities.FormEntryActivity;
-import org.pma2020.collect.android.application.Collect;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -30,6 +21,15 @@ import android.content.Intent;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.DigitsKeyListener;
+
+import org.javarosa.core.model.data.DecimalData;
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.external.ExternalAppsUtils;
+
+import java.text.NumberFormat;
 
 
 /**
@@ -44,7 +44,7 @@ import android.text.method.DigitsKeyListener;
 public class ExDecimalWidget extends ExStringWidget {
 
 	private Double getDoubleAnswerValue() {
-		IAnswerData dataHolder = mPrompt.getAnswerValue();
+		IAnswerData dataHolder = getFormEntryPrompt().getAnswerValue();
         Double d = null;
         if (dataHolder != null) {
         	Object dataValue = dataHolder.getValue();
@@ -92,7 +92,7 @@ public class ExDecimalWidget extends ExStringWidget {
     protected void fireActivity(Intent i) throws ActivityNotFoundException {
     	i.putExtra("value", getDoubleAnswerValue());
        	Collect.getInstance().getActivityLogger().logInstanceAction(this, "launchIntent",
-    			i.getAction(), mPrompt.getIndex());
+    			i.getAction(), getFormEntryPrompt().getIndex());
         ((Activity) getContext()).startActivityForResult(i,
                 FormEntryActivity.EX_DECIMAL_CAPTURE);
     }

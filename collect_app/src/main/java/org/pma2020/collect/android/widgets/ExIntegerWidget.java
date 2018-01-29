@@ -14,13 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import org.pma2020.collect.android.external.ExternalAppsUtils;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.IntegerData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.activities.FormEntryActivity;
-import org.pma2020.collect.android.application.Collect;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -28,6 +21,13 @@ import android.content.Intent;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.DigitsKeyListener;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.IntegerData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.external.ExternalAppsUtils;
 
 
 /**
@@ -42,7 +42,7 @@ import android.text.method.DigitsKeyListener;
 public class ExIntegerWidget extends ExStringWidget {
 
 	private Integer getIntegerAnswerValue() {
-		IAnswerData dataHolder = mPrompt.getAnswerValue();
+		IAnswerData dataHolder = getFormEntryPrompt().getAnswerValue();
 		Integer d = null;
         if (dataHolder != null) {
         	Object dataValue = dataHolder.getValue();
@@ -82,7 +82,7 @@ public class ExIntegerWidget extends ExStringWidget {
     protected void fireActivity(Intent i) throws ActivityNotFoundException {
     	i.putExtra("value", getIntegerAnswerValue());
        	Collect.getInstance().getActivityLogger().logInstanceAction(this, "launchIntent",
-    			i.getAction(), mPrompt.getIndex());
+    			i.getAction(), getFormEntryPrompt().getIndex());
         ((Activity) getContext()).startActivityForResult(i,
                 FormEntryActivity.EX_INT_CAPTURE);
     }

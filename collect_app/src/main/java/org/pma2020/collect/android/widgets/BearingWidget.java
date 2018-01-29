@@ -14,15 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import android.widget.*;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.activities.BearingActivity;
-import org.pma2020.collect.android.activities.FormEntryActivity;
-import org.pma2020.collect.android.application.Collect;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -30,6 +21,19 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TextView;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.activities.BearingActivity;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 /**
  * BearingWidget is the widget that allows the user to get a compass heading.
@@ -48,12 +52,12 @@ public class BearingWidget extends QuestionWidget implements IBinaryWidget {
         params.setMargins(7, 5, 7, 5);
 
         mGetBearingButton = new Button(getContext());
-        mGetBearingButton.setId(QuestionWidget.newUniqueId());
+        mGetBearingButton.setId(ViewIds.generateViewId());
         mGetBearingButton.setPadding(20, 20, 20, 20);
         mGetBearingButton.setText(getContext()
                 .getString(R.string.get_bearing));
         mGetBearingButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP,
-                mAnswerFontsize);
+                getAnswerFontSize());
         mGetBearingButton.setEnabled(!prompt.isReadOnly());
         mGetBearingButton.setLayoutParams(params);
         if (prompt.isReadOnly()) {
@@ -61,12 +65,12 @@ public class BearingWidget extends QuestionWidget implements IBinaryWidget {
         }
 
         mStringAnswer = new TextView(getContext());
-        mStringAnswer.setId(QuestionWidget.newUniqueId());
+        mStringAnswer.setId(ViewIds.generateViewId());
 
         mAnswerDisplay = new TextView(getContext());
-        mAnswerDisplay.setId(QuestionWidget.newUniqueId());
+        mAnswerDisplay.setId(ViewIds.generateViewId());
         mAnswerDisplay
-                .setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+                .setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
         mAnswerDisplay.setGravity(Gravity.CENTER);
 
         String s = prompt.getAnswerText();
@@ -83,12 +87,12 @@ public class BearingWidget extends QuestionWidget implements IBinaryWidget {
                 Collect.getInstance()
                         .getActivityLogger()
                         .logInstanceAction(this, "recordBearing", "click",
-                                mPrompt.getIndex());
+                                getFormEntryPrompt().getIndex());
                 Intent i = null;
                 i = new Intent(getContext(), BearingActivity.class);
 
                 Collect.getInstance().getFormController()
-                        .setIndexWaitingForData(mPrompt.getIndex());
+                        .setIndexWaitingForData(getFormEntryPrompt().getIndex());
                 ((Activity) getContext()).startActivityForResult(i,
                         FormEntryActivity.BEARING_CAPTURE);
             }
@@ -108,21 +112,6 @@ public class BearingWidget extends QuestionWidget implements IBinaryWidget {
         mGetBearingButton.setText(getContext()
                 .getString(R.string.get_bearing));
 
-    }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
     }
 
     @Override
@@ -154,7 +143,7 @@ public class BearingWidget extends QuestionWidget implements IBinaryWidget {
 
     @Override
     public boolean isWaitingForBinaryData() {
-        return mPrompt.getIndex().equals(
+        return getFormEntryPrompt().getIndex().equals(
                 Collect.getInstance().getFormController()
                         .getIndexWaitingForData());
     }

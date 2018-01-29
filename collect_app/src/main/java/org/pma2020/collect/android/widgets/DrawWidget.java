@@ -14,19 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.io.File;
-
-import android.widget.*;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.activities.DrawActivity;
-import org.pma2020.collect.android.activities.FormEntryActivity;
-import org.pma2020.collect.android.application.Collect;
-import org.pma2020.collect.android.utilities.FileUtils;
-import org.pma2020.collect.android.utilities.MediaUtils;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
@@ -41,6 +28,25 @@ import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.activities.DrawActivity;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.FileUtils;
+import org.pma2020.collect.android.utilities.MediaUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
+
+import java.io.File;
 
 /**
  * Free drawing widget.
@@ -61,7 +67,7 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 		super(context, prompt);
 
 		mErrorTextView = new TextView(context);
-		mErrorTextView.setId(QuestionWidget.newUniqueId());
+		mErrorTextView.setId(ViewIds.generateViewId());
 		mErrorTextView.setText("Selected file is not a valid image");
 
 		mInstanceFolder = Collect.getInstance().getFormController()
@@ -71,9 +77,9 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 		params.setMargins(7, 5, 7, 5);
 		// setup Blank Image Button
 		mDrawButton = new Button(getContext());
-		mDrawButton.setId(QuestionWidget.newUniqueId());
+		mDrawButton.setId(ViewIds.generateViewId());
 		mDrawButton.setText(getContext().getString(R.string.draw_image));
-		mDrawButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+		mDrawButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 		mDrawButton.setPadding(20, 20, 20, 20);
 		mDrawButton.setEnabled(!prompt.isReadOnly());
 		mDrawButton.setLayoutParams(params);
@@ -84,7 +90,7 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "drawButton", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 				launchDrawActivity();
 			}
 		});
@@ -95,7 +101,7 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 		answerLayout.addView(mDrawButton);
 		answerLayout.addView(mErrorTextView);
 
-		if (mPrompt.isReadOnly()) {
+		if (getFormEntryPrompt().isReadOnly()) {
 			mDrawButton.setVisibility(View.GONE);
 		}
 		mErrorTextView.setVisibility(View.GONE);
@@ -106,7 +112,7 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 		// Only add the imageView if the user has signed
 		if (mBinaryName != null) {
 			mImageView = new ImageView(getContext());
-			mImageView.setId(QuestionWidget.newUniqueId());
+			mImageView.setId(ViewIds.generateViewId());
 			Display display = ((WindowManager) getContext().getSystemService(
 					Context.WINDOW_SERVICE)).getDefaultDisplay();
 			int screenWidth = display.getWidth();
@@ -133,7 +139,7 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 					Collect.getInstance()
 							.getActivityLogger()
 							.logInstanceAction(this, "viewImage", "click",
-									mPrompt.getIndex());
+									getFormEntryPrompt().getIndex());
 					launchDrawActivity();
 				}
 			});
@@ -158,7 +164,7 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 
 		try {
 			Collect.getInstance().getFormController()
-					.setIndexWaitingForData(mPrompt.getIndex());
+					.setIndexWaitingForData(getFormEntryPrompt().getIndex());
 			((Activity) getContext()).startActivityForResult(i,
 					FormEntryActivity.DRAW_IMAGE);
 		} catch (ActivityNotFoundException e) {
@@ -191,21 +197,6 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 
 		// reset buttons
 		mDrawButton.setText(getContext().getString(R.string.draw_image));
-	}
-
-	@Override
-	public void waitForData() {
-
-	}
-
-	@Override
-	public void cancelWaitingForData() {
-
-	}
-
-	@Override
-	public boolean isWaitingForData() {
-		return false;
 	}
 
 	@Override
@@ -259,7 +250,7 @@ public class DrawWidget extends QuestionWidget implements IBinaryWidget {
 
 	@Override
 	public boolean isWaitingForBinaryData() {
-		return mPrompt.getIndex().equals(
+		return getFormEntryPrompt().getIndex().equals(
 				Collect.getInstance().getFormController()
 						.getIndexWaitingForData());
 	}

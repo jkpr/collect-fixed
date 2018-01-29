@@ -14,17 +14,18 @@
 
 package org.pma2020.collect.android.widgets;
 
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.TimeData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.joda.time.DateTime;
-import org.pma2020.collect.android.application.Collect;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TimePicker;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.TimeData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.joda.time.DateTime;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 import java.util.Date;
 
@@ -43,7 +44,7 @@ public class TimeWidget extends QuestionWidget {
         super(context, prompt);
 
         mTimePicker = new TimePicker(getContext());
-        mTimePicker.setId(QuestionWidget.newUniqueId());
+        mTimePicker.setId(ViewIds.generateViewId());
         mTimePicker.setFocusable(!prompt.isReadOnly());
         mTimePicker.setEnabled(!prompt.isReadOnly());
 
@@ -74,7 +75,7 @@ public class TimeWidget extends QuestionWidget {
 			@Override
 			public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
             	Collect.getInstance().getActivityLogger().logInstanceAction(TimeWidget.this, "onTimeChanged", 
-            			String.format("%1$02d:%2$02d",hourOfDay, minute), mPrompt.getIndex());
+            			String.format("%1$02d:%2$02d",hourOfDay, minute), getFormEntryPrompt().getIndex());
 			}
 		});
 
@@ -93,22 +94,6 @@ public class TimeWidget extends QuestionWidget {
         mTimePicker.setCurrentHour(ldt.getHourOfDay());
         mTimePicker.setCurrentMinute(ldt.getMinuteOfHour());
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public IAnswerData getAnswer() {

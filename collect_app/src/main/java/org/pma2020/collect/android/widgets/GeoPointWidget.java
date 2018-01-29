@@ -14,10 +14,19 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.text.DecimalFormat;
-
 import android.annotation.SuppressLint;
-import android.widget.*;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TextView;
+
 import org.javarosa.core.model.data.GeoPointData;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
@@ -28,14 +37,9 @@ import org.pma2020.collect.android.activities.GeoPointMapActivity;
 import org.pma2020.collect.android.activities.GeoPointMapNotDraggableActivity;
 import org.pma2020.collect.android.application.Collect;
 import org.pma2020.collect.android.utilities.CompatibilityUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import java.text.DecimalFormat;
 
 /**
  * GeoPointWidget is the widget that allows the user to get GPS readings.
@@ -110,19 +114,19 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 		params.setMargins(7, 5, 7, 5);
 
 		mStringAnswer = new TextView(getContext());
-		mStringAnswer.setId(QuestionWidget.newUniqueId());
+		mStringAnswer.setId(ViewIds.generateViewId());
 
 		mAnswerDisplay = new TextView(getContext());
-		mAnswerDisplay.setId(QuestionWidget.newUniqueId());
+		mAnswerDisplay.setId(ViewIds.generateViewId());
 		mAnswerDisplay
-				.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+				.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 		mAnswerDisplay.setGravity(Gravity.CENTER);
 
 		// setup play button
 		mViewButton = new Button(getContext());
-		mViewButton.setId(QuestionWidget.newUniqueId());
+		mViewButton.setId(ViewIds.generateViewId());
 		mViewButton.setText(getContext().getString(R.string.show_location));
-		mViewButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+		mViewButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 		mViewButton.setPadding(20, 20, 20, 20);
 		mViewButton.setLayoutParams(params);
 
@@ -133,7 +137,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "showLocation", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 
 				Intent i;
 				if (mUseMapsV2 ) {
@@ -160,10 +164,10 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 		});
 
 		mGetLocationButton = new Button(getContext());
-		mGetLocationButton.setId(QuestionWidget.newUniqueId());
+		mGetLocationButton.setId(ViewIds.generateViewId());
 		mGetLocationButton.setPadding(20, 20, 20, 20);
 		mGetLocationButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP,
-				mAnswerFontsize);
+				getAnswerFontSize());
 		mGetLocationButton.setEnabled(!prompt.isReadOnly());
 		mGetLocationButton.setLayoutParams(params);
 
@@ -174,7 +178,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "recordLocation", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 				Intent i = null;
 				if ( mUseMapsV2 ) {
 					i = new Intent(getContext(), GeoPointMapActivity.class);
@@ -197,7 +201,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 				i.putExtra(READ_ONLY, mReadOnly);
 				i.putExtra(ACCURACY_THRESHOLD, mAccuracyThreshold);
 				Collect.getInstance().getFormController()
-						.setIndexWaitingForData(mPrompt.getIndex());
+						.setIndexWaitingForData(getFormEntryPrompt().getIndex());
 				((Activity) getContext()).startActivityForResult(i,
 						FormEntryActivity.LOCATION_CAPTURE);
 			}
@@ -264,21 +268,6 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 		mStringAnswer.setText(null);
 		mAnswerDisplay.setText(null);
 		updateButtonLabelsAndVisibility(false);
-	}
-
-	@Override
-	public void waitForData() {
-
-	}
-
-	@Override
-	public void cancelWaitingForData() {
-
-	}
-
-	@Override
-	public boolean isWaitingForData() {
-		return false;
 	}
 
 	@Override
@@ -364,7 +353,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 
 	@Override
 	public boolean isWaitingForBinaryData() {
-		return mPrompt.getIndex().equals(
+		return getFormEntryPrompt().getIndex().equals(
 				Collect.getInstance().getFormController()
 						.getIndexWaitingForData());
 	}

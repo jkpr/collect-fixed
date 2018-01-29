@@ -14,25 +14,7 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.annotation.SuppressLint;
-import android.view.ViewGroup;
-import org.javarosa.core.model.SelectChoice;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.SelectOneData;
-import org.javarosa.core.model.data.helper.Selection;
-import org.javarosa.form.api.FormEntryCaption;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.javarosa.xpath.expr.XPathFuncExpr;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.application.Collect;
-import org.pma2020.collect.android.external.ExternalDataUtil;
-import org.pma2020.collect.android.external.ExternalSelectChoice;
-import org.pma2020.collect.android.listeners.AdvanceToNextListener;
-import org.pma2020.collect.android.views.MediaLayout;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -45,6 +27,24 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
+
+import org.javarosa.core.model.SelectChoice;
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.SelectOneData;
+import org.javarosa.core.model.data.helper.Selection;
+import org.javarosa.form.api.FormEntryCaption;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.javarosa.xpath.expr.XPathFuncExpr;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.external.ExternalDataUtil;
+import org.pma2020.collect.android.external.ExternalSelectChoice;
+import org.pma2020.collect.android.listeners.AdvanceToNextListener;
+import org.pma2020.collect.android.utilities.ViewIds;
+import org.pma2020.collect.android.views.MediaLayout;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SelectOneWidgets handles select-one fields using radio buttons. Unlike the classic
@@ -97,10 +97,10 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
                 ImageView rightArrow = (ImageView) thisParentLayout.getChildAt(1);
 
                 RadioButton r = new RadioButton(getContext());
-                r.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+                r.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
                 r.setText(prompt.getSelectChoiceText(mItems.get(i)));
                 r.setTag(Integer.valueOf(i));
-                r.setId(QuestionWidget.newUniqueId());
+                r.setId(ViewIds.generateViewId());
                 r.setEnabled(!prompt.isReadOnly());
                 r.setFocusable(!prompt.isReadOnly());
 
@@ -132,7 +132,7 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
                 String bigImageURI = null;
                 bigImageURI = prompt.getSpecialFormSelectChoiceText(mItems.get(i), "big-image");
 
-                MediaLayout mediaLayout = new MediaLayout(getContext(), mPlayer);
+                MediaLayout mediaLayout = new MediaLayout(getContext(), getPlayer());
                 mediaLayout.setAVT(prompt.getIndex(), "", r, audioURI, imageURI, videoURI, bigImageURI);
 
                 if (i != mItems.size() - 1) {
@@ -158,22 +158,6 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
             }
         }
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public IAnswerData getAnswer() {
@@ -223,7 +207,7 @@ public class SelectOneAutoAdvanceWidget extends QuestionWidget implements OnChec
             }
         }
        	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged", 
-    			mItems.get((Integer)buttonView.getTag()).getValue(), mPrompt.getIndex());
+    			mItems.get((Integer)buttonView.getTag()).getValue(), getFormEntryPrompt().getIndex());
 
        	listener.advance();
     }

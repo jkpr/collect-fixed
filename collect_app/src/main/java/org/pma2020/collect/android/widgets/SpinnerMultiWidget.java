@@ -14,12 +14,16 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.annotation.SuppressLint;
-import android.view.ViewGroup;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.util.TypedValue;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
@@ -30,14 +34,8 @@ import org.javarosa.xpath.expr.XPathFuncExpr;
 import org.pma2020.collect.android.R;
 import org.pma2020.collect.android.external.ExternalDataUtil;
 
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.util.TypedValue;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.TextView;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SpinnerMultiWidget, like SelectMultiWidget handles multiple selection fields using checkboxes,
@@ -83,8 +81,6 @@ public class SpinnerMultiWidget extends QuestionWidget {
             mItems = prompt.getSelectChoices();
         }
 
-        mPrompt = prompt;
-
         selections = new boolean[mItems.size()];
         answer_items = new CharSequence[mItems.size()];
         alert_builder = new AlertDialog.Builder(context);
@@ -97,11 +93,11 @@ public class SpinnerMultiWidget extends QuestionWidget {
         }
 
         selectionText.setText(context.getString(R.string.selected));
-        selectionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
+        selectionText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getQuestionFontSize());
         selectionText.setVisibility(View.GONE);
 
         button.setText(context.getString(R.string.select_answer));
-        button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
+        button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getQuestionFontSize());
         button.setPadding(0, 0, 0, 7);
 
         // Give the button a click listener. This defines the alert as well. All the
@@ -109,7 +105,7 @@ public class SpinnerMultiWidget extends QuestionWidget {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                alert_builder.setTitle(mPrompt.getQuestionText()).setPositiveButton(R.string.ok,
+                alert_builder.setTitle(getFormEntryPrompt().getQuestionText()).setPositiveButton(R.string.ok,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             boolean first = true;
@@ -215,22 +211,6 @@ public class SpinnerMultiWidget extends QuestionWidget {
             selections[i] = false;
         }
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public void setFocus(Context context) {

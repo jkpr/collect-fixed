@@ -14,20 +14,7 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.io.File;
-import java.util.Date;
-
 import android.annotation.SuppressLint;
-import android.view.*;
-import android.widget.*;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.activities.FormEntryActivity;
-import org.pma2020.collect.android.application.Collect;
-import org.pma2020.collect.android.utilities.MediaUtils;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
@@ -38,9 +25,30 @@ import android.net.Uri;
 import android.provider.MediaStore.Images;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.MediaUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
+
+import java.io.File;
+import java.util.Date;
 
 /**
  * Widget that allows user to take pictures, sounds or video and add them to the
@@ -131,15 +139,15 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 		params.setMargins(7, 5, 7, 5);
 
 		mErrorTextView = new TextView(context);
-		mErrorTextView.setId(QuestionWidget.newUniqueId());
+		mErrorTextView.setId(ViewIds.generateViewId());
 		mErrorTextView.setText("Selected file is not a valid image");
 
 		// setup capture button
 		mCaptureButton = new Button(getContext());
-		mCaptureButton.setId(QuestionWidget.newUniqueId());
+		mCaptureButton.setId(ViewIds.generateViewId());
 		mCaptureButton.setText(getContext().getString(R.string.capture_image));
 		mCaptureButton
-				.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+				.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 		mCaptureButton.setPadding(20, 20, 20, 20);
 		mCaptureButton.setEnabled(!prompt.isReadOnly());
 		mCaptureButton.setLayoutParams(params);
@@ -151,7 +159,7 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "captureButton", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 				mErrorTextView.setVisibility(View.GONE);
 				Intent i = new Intent(
 						android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -169,7 +177,7 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 						Uri.fromFile(new File(Collect.TMPFILE_PATH)));
 				try {
 					Collect.getInstance().getFormController()
-							.setIndexWaitingForData(mPrompt.getIndex());
+							.setIndexWaitingForData(getFormEntryPrompt().getIndex());
 					((Activity) getContext()).startActivityForResult(i,
 							FormEntryActivity.IMAGE_CAPTURE);
 				} catch (ActivityNotFoundException e) {
@@ -187,9 +195,9 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 
 		// setup chooser button
 		mChooseButton = new Button(getContext());
-		mChooseButton.setId(QuestionWidget.newUniqueId());
+		mChooseButton.setId(ViewIds.generateViewId());
 		mChooseButton.setText(getContext().getString(R.string.choose_image));
-		mChooseButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+		mChooseButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 		mChooseButton.setPadding(20, 20, 20, 20);
 		mChooseButton.setEnabled(!prompt.isReadOnly());
 		mChooseButton.setLayoutParams(params);
@@ -201,14 +209,14 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "chooseButton", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 				mErrorTextView.setVisibility(View.GONE);
 				Intent i = new Intent(Intent.ACTION_GET_CONTENT);
 				i.setType("image/*");
 
 				try {
 					Collect.getInstance().getFormController()
-							.setIndexWaitingForData(mPrompt.getIndex());
+							.setIndexWaitingForData(getFormEntryPrompt().getIndex());
 					((Activity) getContext()).startActivityForResult(i,
 							FormEntryActivity.IMAGE_CHOOSER);
 				} catch (ActivityNotFoundException e) {
@@ -243,7 +251,7 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 		// Only add the imageView if the user has taken a picture
 		if (mBinaryName != null) {
 			mImageDisplay = new WebView(getContext());
-			mImageDisplay.setId(QuestionWidget.newUniqueId());
+			mImageDisplay.setId(ViewIds.generateViewId());
 			mImageDisplay.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
 			mImageDisplay.getSettings().setBuiltInZoomControls(true);
 			mImageDisplay.getSettings().setDefaultZoom(
@@ -289,21 +297,6 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 
 		// reset buttons
 		mCaptureButton.setText(getContext().getString(R.string.capture_image));
-	}
-
-	@Override
-	public void waitForData() {
-
-	}
-
-	@Override
-	public void cancelWaitingForData() {
-
-	}
-
-	@Override
-	public boolean isWaitingForData() {
-		return false;
 	}
 
 	@Override
@@ -358,7 +351,7 @@ public class ImageWebViewWidget extends QuestionWidget implements IBinaryWidget 
 
 	@Override
 	public boolean isWaitingForBinaryData() {
-		return mPrompt.getIndex().equals(
+		return getFormEntryPrompt().getIndex().equals(
 				Collect.getInstance().getFormController()
 						.getIndexWaitingForData());
 	}

@@ -112,7 +112,6 @@ public class GridMultiWidget extends QuestionWidget {
         } else {
             mItems = prompt.getSelectChoices();
         }
-        mPrompt = prompt;
 
         selected = new boolean[mItems.size()];
         choices = new String[mItems.size()];
@@ -156,7 +155,7 @@ public class GridMultiWidget extends QuestionWidget {
             String audioURI =
             		prompt.getSpecialFormSelectChoiceText(sc, FormEntryCaption.TEXT_FORM_AUDIO);
             if ( audioURI != null) {
-            	audioHandlers[i] = new AudioHandler(prompt.getIndex(), sc.getValue(), audioURI, mPlayer);
+            	audioHandlers[i] = new AudioHandler(prompt.getIndex(), sc.getValue(), audioURI, getPlayer());
             } else {
             	audioHandlers[i] = null;
             }
@@ -223,7 +222,7 @@ public class GridMultiWidget extends QuestionWidget {
                 choices[i] = prompt.getSelectChoiceText(sc);
 
                 TextView missingImage = new TextView(getContext());
-                missingImage.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+                missingImage.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
                 missingImage.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
                 missingImage.setPadding(IMAGE_PADDING, IMAGE_PADDING, IMAGE_PADDING, IMAGE_PADDING);
 
@@ -292,7 +291,7 @@ public class GridMultiWidget extends QuestionWidget {
                 	}
                     imageViews[position].setBackgroundColor(Color.WHITE);
                    	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.deselect",
-                			mItems.get(position).getValue(), mPrompt.getIndex());
+                			mItems.get(position).getValue(), getFormEntryPrompt().getIndex());
 
                 } else {
                     selected[position] = true;
@@ -302,7 +301,7 @@ public class GridMultiWidget extends QuestionWidget {
                     imageViews[position].setBackgroundColor(Color.rgb(orangeRedVal, orangeGreenVal,
                         orangeBlueVal));
                    	Collect.getInstance().getActivityLogger().logInstanceAction(this, "onItemClick.select",
-                			mItems.get(position).getValue(), mPrompt.getIndex());
+                			mItems.get(position).getValue(), getFormEntryPrompt().getIndex());
                 	if ( audioHandlers[position] != null) {
                 		audioHandlers[position].playAudio(getContext());
                 	}
@@ -374,22 +373,6 @@ public class GridMultiWidget extends QuestionWidget {
         }
 
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public void setFocus(Context context) {

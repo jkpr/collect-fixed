@@ -29,7 +29,7 @@ android {
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
         applicationId("org.pma2020.collect.android")
-        versionCode(1059)
+        versionCode(1060)
         versionName("1.4.8e")
     }
 

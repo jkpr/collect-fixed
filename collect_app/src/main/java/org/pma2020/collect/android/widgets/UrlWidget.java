@@ -22,12 +22,18 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.core.model.data.StringData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.pma2020.collect.android.R;
 import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 /**
  * Widget that allows user to open URLs from within the form
@@ -47,10 +53,10 @@ public class UrlWidget extends QuestionWidget {
 
         // set button formatting
         mOpenUrlButton = new Button(getContext());
-        mOpenUrlButton.setId(QuestionWidget.newUniqueId());
+        mOpenUrlButton.setId(ViewIds.generateViewId());
         mOpenUrlButton.setText(getContext().getString(R.string.open_url));
         mOpenUrlButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP,
-                mAnswerFontsize);
+                getAnswerFontSize());
         mOpenUrlButton.setPadding(20, 20, 20, 20);
         mOpenUrlButton.setEnabled(!prompt.isReadOnly());
         mOpenUrlButton.setLayoutParams(params);
@@ -61,7 +67,7 @@ public class UrlWidget extends QuestionWidget {
                 Collect.getInstance()
                         .getActivityLogger()
                         .logInstanceAction(this, "openUrl", "click",
-                                mPrompt.getIndex());
+                                getFormEntryPrompt().getIndex());
 
                 if (mStringAnswer != null & mStringAnswer.getText() != null
                         && !"".equalsIgnoreCase((String) mStringAnswer.getText())) {
@@ -76,8 +82,8 @@ public class UrlWidget extends QuestionWidget {
 
         // set text formatting
         mStringAnswer = new TextView(getContext());
-        mStringAnswer.setId(QuestionWidget.newUniqueId());
-        mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+        mStringAnswer.setId(ViewIds.generateViewId());
+        mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
         mStringAnswer.setGravity(Gravity.CENTER);
 
         String s = prompt.getAnswerText();
@@ -95,21 +101,6 @@ public class UrlWidget extends QuestionWidget {
     @Override
     public void clearAnswer() {
         Toast.makeText(getContext(), "URL is readonly", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
     }
 
     @Override

@@ -193,6 +193,8 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 	// Random ID
 	private static final int DELETE_REPEAT = 654321;
 
+	private Bundle state;
+
 	private String mFormPath;
 	private GestureDetector mGestureDetector;
 
@@ -295,6 +297,7 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		Boolean newForm = true;
 		mAutoSaved = false;
 		if (savedInstanceState != null) {
+			state = savedInstanceState;
 			if (savedInstanceState.containsKey(KEY_FORMPATH)) {
 				mFormPath = savedInstanceState.getString(KEY_FORMPATH);
 			}
@@ -546,6 +549,10 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		// PMA-Logging: END
 	}
 
+	public Bundle getState() {
+		return state;
+	}
+
     /**
      * Create save-points asynchronously in order to not affect swiping performance
      * on larger forms.
@@ -584,6 +591,14 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		outState.putBoolean(NEWFORM, false);
 		outState.putString(KEY_ERROR, mErrorMessage);
 		outState.putBoolean(KEY_AUTO_SAVED, mAutoSaved);
+
+		if (mCurrentView instanceof ODKView) {
+			outState.putAll(((ODKView) mCurrentView).getState());
+			// This value is originally set in onCreate() method but if you only minimize the app or
+			// block/unblock the screen, onCreate() method might not be called (if the activity is just paused
+			// not stopped https://developer.android.com/guide/components/activities/activity-lifecycle.html)
+			state = outState;
+		}
 	}
 
 	@Override
@@ -932,6 +947,7 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 			// saveDataToDisk(DO_NOT_EXIT, isInstanceComplete(false), null);
 			return true;
 		case MENU_HIERARCHY_VIEW:
+			state = null;
 			Collect.getInstance()
 					.getActivityLogger()
 					.logInstanceAction(this, "onOptionsItemSelected",
@@ -1038,7 +1054,7 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "onContextItemSelected",
-								"createClearDialog", qw.getPrompt().getIndex());
+								"createClearDialog", qw.getFormEntryPrompt().getIndex());
 				createClearDialog(qw);
 			}
 		}
@@ -1358,7 +1374,7 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 
 			// Makes a "clear answer" menu pop up on long-click
 			for (QuestionWidget qw : odkv.getWidgets()) {
-				if (!qw.getPrompt().isReadOnly()) {
+				if (!qw.getFormEntryPrompt().isReadOnly()) {
 					registerForContextMenu(qw);
 				}
 			}
@@ -1403,6 +1419,7 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 	 * answers to the data model after checking constraints.
 	 */
 	private void showNextView() {
+		state = null;
 		try {
             FormController formController = Collect.getInstance()
                     .getFormController();
@@ -1490,6 +1507,7 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 	 * model without checking constraints.
 	 */
 	private void showPreviousView() {
+		state = null;
         try {
 			FormController formController = Collect.getInstance()
                     .getFormController();
@@ -2238,13 +2256,13 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		Collect.getInstance()
 				.getActivityLogger()
 				.logInstanceAction(this, "createClearDialog", "show",
-						qw.getPrompt().getIndex());
+						qw.getFormEntryPrompt().getIndex());
 		mAlertDialog = new AlertDialog.Builder(this).create();
 		mAlertDialog.setIcon(android.R.drawable.ic_dialog_info);
 
 		mAlertDialog.setTitle(getString(R.string.clear_answer_ask));
 
-		String question = qw.getPrompt().getLongText();
+		String question = qw.getFormEntryPrompt().getLongText();
 		if (question == null) {
 			question = "";
 		}
@@ -2264,7 +2282,7 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 					Collect.getInstance()
 							.getActivityLogger()
 							.logInstanceAction(this, "createClearDialog",
-									"clearAnswer", qw.getPrompt().getIndex());
+									"clearAnswer", qw.getFormEntryPrompt().getIndex());
 					clearAnswer(qw);
 					saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 					break;
@@ -2272,7 +2290,7 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 					Collect.getInstance()
 							.getActivityLogger()
 							.logInstanceAction(this, "createClearDialog",
-									"cancel", qw.getPrompt().getIndex());
+									"cancel", qw.getFormEntryPrompt().getIndex());
 					break;
 				}
 			}

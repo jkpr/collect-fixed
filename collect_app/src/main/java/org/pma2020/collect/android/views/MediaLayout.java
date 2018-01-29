@@ -14,17 +14,6 @@
 
 package org.pma2020.collect.android.views;
 
-import java.io.File;
-
-import org.javarosa.core.model.FormIndex;
-import org.javarosa.core.reference.InvalidReferenceException;
-import org.javarosa.core.reference.ReferenceManager;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.application.Collect;
-import org.pma2020.collect.android.listeners.AudioPlayListener;
-import org.pma2020.collect.android.utilities.FileUtils;
-import org.pma2020.collect.android.widgets.QuestionWidget;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -48,6 +37,17 @@ import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.javarosa.core.model.FormIndex;
+import org.javarosa.core.reference.InvalidReferenceException;
+import org.javarosa.core.reference.ReferenceManager;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.listeners.AudioPlayListener;
+import org.pma2020.collect.android.utilities.FileUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
+
+import java.io.File;
 
 /**
  * This layout is used anywhere we can have image/audio/video/text. TODO: It would probably be nice
@@ -159,7 +159,7 @@ public class MediaLayout extends RelativeLayout implements OnClickListener {
     	mIndex = index;
         mView_Text = text;
         mOriginalText = text.getText();
-        mView_Text.setId(QuestionWidget.newUniqueId());
+        mView_Text.setId(ViewIds.generateViewId());
         mVideoURI = videoURI;
 
         // Layout configurations for our elements in the relative layout
@@ -177,7 +177,7 @@ public class MediaLayout extends RelativeLayout implements OnClickListener {
             // An audio file is specified
             mAudioButton = new AudioButton(getContext(), mIndex, mSelectionDesignator, audioURI, mPlayer);
             mAudioButton.setOnClickListener(this);
-            mAudioButton.setId(QuestionWidget.newUniqueId()); // random ID to be used by the
+            mAudioButton.setId(ViewIds.generateViewId()); // random ID to be used by the
                                                                       // relative layout.
         } else {
             // No audio file specified, so ignore.
@@ -200,14 +200,14 @@ public class MediaLayout extends RelativeLayout implements OnClickListener {
                 }
 
             });
-            mVideoButton.setId(QuestionWidget.newUniqueId());
+            mVideoButton.setId(ViewIds.generateViewId());
         } else {
             // No video file specified, so ignore.
         }
 
         // Now set up the image view
         String errorMsg = null;
-        final int imageId = QuestionWidget.newUniqueId();
+        final int imageId = ViewIds.generateViewId();
         if (imageURI != null) {
             try {
                 String imageFilename = ReferenceManager._().DeriveReference(imageURI).getLocalURI();

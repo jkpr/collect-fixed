@@ -14,18 +14,14 @@
 
 package org.pma2020.collect.android.logic;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
+import android.util.Log;
 
 import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.GroupDef;
 import org.javarosa.core.model.IDataReference;
 import org.javarosa.core.model.IFormElement;
+import org.javarosa.core.model.QuestionDef;
 import org.javarosa.core.model.SubmissionProfile;
 import org.javarosa.core.model.ValidateOutcome;
 import org.javarosa.core.model.condition.EvaluationContext;
@@ -49,7 +45,12 @@ import org.javarosa.xpath.expr.XPathExpression;
 import org.pma2020.collect.android.exception.JavaRosaException;
 import org.pma2020.collect.android.views.ODKView;
 
-import android.util.Log;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * This class is a wrapper for Javarosa's FormEntryController. In theory, if you wanted to replace
@@ -937,6 +938,10 @@ public class FormController {
 
     public String getQuestionPromptConstraintText(FormIndex index) {
     	return mFormEntryController.getModel().getQuestionPrompt(index).getConstraintText();
+    }
+
+    public boolean currentCaptionPromptIsQuestion() {
+        return getCaptionPrompt().getFormElement() instanceof QuestionDef;
     }
 
     public String getQuestionPromptRequiredText(FormIndex index) {

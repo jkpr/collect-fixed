@@ -14,18 +14,18 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.text.NumberFormat;
-import java.util.Locale;
-
-import org.javarosa.core.model.data.DecimalData;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.form.api.FormEntryPrompt;
-
 import android.content.Context;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.DigitsKeyListener;
 import android.util.TypedValue;
+
+import org.javarosa.core.model.data.DecimalData;
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.form.api.FormEntryPrompt;
+
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * A widget that restricts values to floating point numbers.
@@ -35,7 +35,7 @@ import android.util.TypedValue;
 public class DecimalWidget extends StringWidget {
 
 	private Double getDoubleAnswerValue() {
-		IAnswerData dataHolder = mPrompt.getAnswerValue();
+		IAnswerData dataHolder = getFormEntryPrompt().getAnswerValue();
         Double d = null;
         if (dataHolder != null) {
         	Object dataValue = dataHolder.getValue();
@@ -54,7 +54,7 @@ public class DecimalWidget extends StringWidget {
         super(context, prompt, readOnlyOverride, true);
 
         // formatting
-        mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+        mAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
         mAnswer.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
 
         // needed to make long readonly text scroll

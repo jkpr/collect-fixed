@@ -14,18 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.util.List;
-
-import org.javarosa.core.model.SelectChoice;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.SelectOneData;
-import org.javarosa.core.model.data.helper.Selection;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.javarosa.xpath.expr.XPathFuncExpr;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.application.Collect;
-import org.pma2020.collect.android.external.ExternalDataUtil;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
@@ -40,6 +28,18 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import org.javarosa.core.model.SelectChoice;
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.SelectOneData;
+import org.javarosa.core.model.data.helper.Selection;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.javarosa.xpath.expr.XPathFuncExpr;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.external.ExternalDataUtil;
+
+import java.util.List;
 
 /**
  * SpinnerWidget handles select-one fields. Instead of a list of buttons it uses a spinner, wherein
@@ -77,7 +77,7 @@ public class SpinnerWidget extends QuestionWidget {
         // The spinner requires a custom adapter. It is defined below
         SpinnerAdapter adapter =
             new SpinnerAdapter(getContext(), android.R.layout.simple_spinner_item, choices,
-                    TypedValue.COMPLEX_UNIT_DIP, mQuestionFontsize);
+                    TypedValue.COMPLEX_UNIT_DIP, getQuestionFontSize());
 
         spinner.setAdapter(adapter);
         spinner.setPrompt(prompt.getQuestionText());
@@ -107,10 +107,10 @@ public class SpinnerWidget extends QuestionWidget {
 					int position, long id) {
 				if ( position == mItems.size() ) {
 					Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged.clearValue", 
-		    			"", mPrompt.getIndex());
+		    			"", getFormEntryPrompt().getIndex());
 				} else {
 					Collect.getInstance().getActivityLogger().logInstanceAction(this, "onCheckedChanged", 
-			    			mItems.get(position).getValue(), mPrompt.getIndex());
+			    			mItems.get(position).getValue(), getFormEntryPrompt().getIndex());
 				}
 			}
 
@@ -143,22 +143,6 @@ public class SpinnerWidget extends QuestionWidget {
         // to its original value, but it is not null.
         spinner.setSelection(mItems.size());
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public void setFocus(Context context) {

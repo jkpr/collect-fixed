@@ -14,20 +14,25 @@
 
 package org.pma2020.collect.android.widgets;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.Resources;
-import android.widget.*;
+import android.os.Build;
+import android.view.Gravity;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.CalendarView;
+import android.widget.DatePicker;
+import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
+import android.widget.TimePicker;
+
 import org.javarosa.core.model.data.DateTimeData;
 import org.javarosa.core.model.data.IAnswerData;
 import org.javarosa.form.api.FormEntryPrompt;
 import org.joda.time.DateTime;
 import org.pma2020.collect.android.application.Collect;
-
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.os.Build;
-import android.view.Gravity;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 import java.lang.reflect.Field;
 import java.util.Calendar;
@@ -54,12 +59,12 @@ public class DateTimeWidget extends QuestionWidget {
         super(context, prompt);
 
         mDatePicker = new DatePicker(getContext());
-        mDatePicker.setId(QuestionWidget.newUniqueId());
+        mDatePicker.setId(ViewIds.generateViewId());
         mDatePicker.setFocusable(!prompt.isReadOnly());
         mDatePicker.setEnabled(!prompt.isReadOnly());
 
         mTimePicker = new TimePicker(getContext());
-        mTimePicker.setId(QuestionWidget.newUniqueId());
+        mTimePicker.setId(ViewIds.generateViewId());
         mTimePicker.setFocusable(!prompt.isReadOnly());
         mTimePicker.setEnabled(!prompt.isReadOnly());
         mTimePicker.setPadding(0, 20, 0, 0);
@@ -76,7 +81,7 @@ public class DateTimeWidget extends QuestionWidget {
         mDateListener = new DatePicker.OnDateChangedListener() {
             @Override
             public void onDateChanged(DatePicker view, int year, int month, int day) {
-                if (mPrompt.isReadOnly()) {
+                if (getFormEntryPrompt().isReadOnly()) {
                     setAnswer();
                 } else {
                     // handle leap years and number of days in month
@@ -91,13 +96,13 @@ public class DateTimeWidget extends QuestionWidget {
                     if (day > max) {
                         if (! (mDatePicker.getDayOfMonth()==day && mDatePicker.getMonth()==month && mDatePicker.getYear()==year) ) {
                         	Collect.getInstance().getActivityLogger().logInstanceAction(DateTimeWidget.this, "onDateChanged",
-                        			String.format("%1$04d-%2$02d-%3$02d",year, month, max), mPrompt.getIndex());
+                        			String.format("%1$04d-%2$02d-%3$02d",year, month, max), getFormEntryPrompt().getIndex());
                             mDatePicker.updateDate(year, month, max);
                         }
                     } else {
                         if (! (mDatePicker.getDayOfMonth()==day && mDatePicker.getMonth()==month && mDatePicker.getYear()==year) ) {
                         	Collect.getInstance().getActivityLogger().logInstanceAction(DateTimeWidget.this, "onDateChanged",
-                        			String.format("%1$04d-%2$02d-%3$02d",year, month, day), mPrompt.getIndex());
+                        			String.format("%1$04d-%2$02d-%3$02d",year, month, day), getFormEntryPrompt().getIndex());
                             mDatePicker.updateDate(year, month, day);
                         }
                     }
@@ -109,7 +114,7 @@ public class DateTimeWidget extends QuestionWidget {
 			@Override
 			public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
             	Collect.getInstance().getActivityLogger().logInstanceAction(DateTimeWidget.this, "onTimeChanged",
-            			String.format("%1$02d:%2$02d",hourOfDay, minute), mPrompt.getIndex());
+            			String.format("%1$02d:%2$02d",hourOfDay, minute), getFormEntryPrompt().getIndex());
 			}
 		});
 
@@ -235,11 +240,11 @@ public class DateTimeWidget extends QuestionWidget {
 
     private void setAnswer() {
 
-        if (mPrompt.getAnswerValue() != null) {
+        if (getFormEntryPrompt().getAnswerValue() != null) {
 
             DateTime ldt =
                 new DateTime(
-                        ((Date) ((DateTimeData) mPrompt.getAnswerValue()).getValue()).getTime());
+                        ((Date) ((DateTimeData) getFormEntryPrompt().getAnswerValue()).getValue()).getTime());
             mDatePicker.init(ldt.getYear(), ldt.getMonthOfYear() - 1, ldt.getDayOfMonth(),
                 mDateListener);
             mTimePicker.setCurrentHour(ldt.getHourOfDay());
@@ -263,22 +268,6 @@ public class DateTimeWidget extends QuestionWidget {
         mTimePicker.setCurrentHour(ldt.getHourOfDay());
         mTimePicker.setCurrentMinute(ldt.getMinuteOfHour());
     }
-
-    @Override
-    public void waitForData() {
-
-    }
-
-    @Override
-    public void cancelWaitingForData() {
-
-    }
-
-    @Override
-    public boolean isWaitingForData() {
-        return false;
-    }
-
 
     @Override
     public IAnswerData getAnswer() {

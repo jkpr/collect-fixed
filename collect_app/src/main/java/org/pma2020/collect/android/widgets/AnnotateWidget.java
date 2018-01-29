@@ -14,19 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import java.io.File;
-
-import android.widget.*;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.activities.DrawActivity;
-import org.pma2020.collect.android.activities.FormEntryActivity;
-import org.pma2020.collect.android.application.Collect;
-import org.pma2020.collect.android.utilities.FileUtils;
-import org.pma2020.collect.android.utilities.MediaUtils;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
@@ -41,6 +28,25 @@ import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.activities.DrawActivity;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.FileUtils;
+import org.pma2020.collect.android.utilities.MediaUtils;
+import org.pma2020.collect.android.utilities.ViewIds;
+
+import java.io.File;
 
 /**
  * Image widget that supports annotations on the image.
@@ -74,15 +80,15 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 		params.setMargins(7, 5, 7, 5);
 
 		mErrorTextView = new TextView(context);
-		mErrorTextView.setId(QuestionWidget.newUniqueId());
+		mErrorTextView.setId(ViewIds.generateViewId());
 		mErrorTextView.setText("Selected file is not a valid image");
 
 		// setup capture button
 		mCaptureButton = new Button(getContext());
-		mCaptureButton.setId(QuestionWidget.newUniqueId());
+		mCaptureButton.setId(ViewIds.generateViewId());
 		mCaptureButton.setText(getContext().getString(R.string.capture_image));
 		mCaptureButton
-				.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+				.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 		mCaptureButton.setPadding(20, 20, 20, 20);
 		mCaptureButton.setEnabled(!prompt.isReadOnly());
 		mCaptureButton.setLayoutParams(params);
@@ -94,7 +100,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "captureButton", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 				mErrorTextView.setVisibility(View.GONE);
 				Intent i = new Intent(
 						android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -112,7 +118,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 						Uri.fromFile(new File(Collect.TMPFILE_PATH)));
 				try {
 					Collect.getInstance().getFormController()
-							.setIndexWaitingForData(mPrompt.getIndex());
+							.setIndexWaitingForData(getFormEntryPrompt().getIndex());
 					((Activity) getContext()).startActivityForResult(i,
 							FormEntryActivity.IMAGE_CAPTURE);
 				} catch (ActivityNotFoundException e) {
@@ -130,9 +136,9 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 
 		// setup chooser button
 		mChooseButton = new Button(getContext());
-		mChooseButton.setId(QuestionWidget.newUniqueId());
+		mChooseButton.setId(ViewIds.generateViewId());
 		mChooseButton.setText(getContext().getString(R.string.choose_image));
-		mChooseButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+		mChooseButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 		mChooseButton.setPadding(20, 20, 20, 20);
 		mChooseButton.setEnabled(!prompt.isReadOnly());
 		mChooseButton.setLayoutParams(params);
@@ -144,14 +150,14 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "chooseButton", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 				mErrorTextView.setVisibility(View.GONE);
 				Intent i = new Intent(Intent.ACTION_GET_CONTENT);
 				i.setType("image/*");
 
 				try {
 					Collect.getInstance().getFormController()
-							.setIndexWaitingForData(mPrompt.getIndex());
+							.setIndexWaitingForData(getFormEntryPrompt().getIndex());
 					((Activity) getContext()).startActivityForResult(i,
 							FormEntryActivity.IMAGE_CHOOSER);
 				} catch (ActivityNotFoundException e) {
@@ -168,10 +174,10 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 
 		// setup Blank Image Button
 		mAnnotateButton = new Button(getContext());
-		mAnnotateButton.setId(QuestionWidget.newUniqueId());
+		mAnnotateButton.setId(ViewIds.generateViewId());
 		mAnnotateButton.setText(getContext().getString(R.string.markup_image));
 		mAnnotateButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP,
-				mAnswerFontsize);
+				getAnswerFontSize());
 		mAnnotateButton.setPadding(20, 20, 20, 20);
 		mAnnotateButton.setEnabled(false);
 		mAnnotateButton.setLayoutParams(params);
@@ -182,7 +188,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "annotateButton", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 				launchAnnotateActivity();
 			}
 		});
@@ -213,7 +219,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 				mAnnotateButton.setEnabled(true);
 			}
 			mImageView = new ImageView(getContext());
-			mImageView.setId(QuestionWidget.newUniqueId());
+			mImageView.setId(ViewIds.generateViewId());
 			Display display = ((WindowManager) getContext().getSystemService(
 					Context.WINDOW_SERVICE)).getDefaultDisplay();
 			int screenWidth = display.getWidth();
@@ -240,7 +246,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 					Collect.getInstance()
 							.getActivityLogger()
 							.logInstanceAction(this, "viewImage", "click",
-									mPrompt.getIndex());
+									getFormEntryPrompt().getIndex());
 					launchAnnotateActivity();
 				}
 			});
@@ -264,7 +270,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 
 		try {
 			Collect.getInstance().getFormController()
-					.setIndexWaitingForData(mPrompt.getIndex());
+					.setIndexWaitingForData(getFormEntryPrompt().getIndex());
 			((Activity) getContext()).startActivityForResult(i,
 					FormEntryActivity.ANNOTATE_IMAGE);
 		} catch (ActivityNotFoundException e) {
@@ -294,27 +300,12 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 		deleteMedia();
 		mImageView.setImageBitmap(null);
 		mErrorTextView.setVisibility(View.GONE);
-		if (!mPrompt.isReadOnly()) {
+		if (!getFormEntryPrompt().isReadOnly()) {
 			mAnnotateButton.setEnabled(false);
 		}
 
 		// reset buttons
 		mCaptureButton.setText(getContext().getString(R.string.capture_image));
-	}
-
-	@Override
-	public void waitForData() {
-
-	}
-
-	@Override
-	public void cancelWaitingForData() {
-
-	}
-
-	@Override
-	public boolean isWaitingForData() {
-		return false;
 	}
 
 	@Override
@@ -368,7 +359,7 @@ public class AnnotateWidget extends QuestionWidget implements IBinaryWidget {
 
 	@Override
 	public boolean isWaitingForBinaryData() {
-		return mPrompt.getIndex().equals(
+		return getFormEntryPrompt().getIndex().equals(
 				Collect.getInstance().getFormController()
 						.getIndexWaitingForData());
 	}

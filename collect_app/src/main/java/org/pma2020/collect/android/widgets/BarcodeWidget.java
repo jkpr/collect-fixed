@@ -14,14 +14,6 @@
 
 package org.pma2020.collect.android.widgets;
 
-import android.widget.*;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.core.model.data.StringData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.pma2020.collect.android.R;
-import org.pma2020.collect.android.activities.FormEntryActivity;
-import org.pma2020.collect.android.application.Collect;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -30,6 +22,19 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.StringData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.pma2020.collect.android.R;
+import org.pma2020.collect.android.activities.FormEntryActivity;
+import org.pma2020.collect.android.application.Collect;
+import org.pma2020.collect.android.utilities.ViewIds;
 
 /**
  * Widget that allows user to scan barcodes and add them to the form.
@@ -48,10 +53,10 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 
 		// set button formatting
 		mGetBarcodeButton = new Button(getContext());
-		mGetBarcodeButton.setId(QuestionWidget.newUniqueId());
+		mGetBarcodeButton.setId(ViewIds.generateViewId());
 		mGetBarcodeButton.setText(getContext().getString(R.string.get_barcode));
 		mGetBarcodeButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP,
-				mAnswerFontsize);
+				getAnswerFontSize());
 		mGetBarcodeButton.setPadding(20, 20, 20, 20);
 		mGetBarcodeButton.setEnabled(!prompt.isReadOnly());
 		mGetBarcodeButton.setLayoutParams(params);
@@ -63,11 +68,11 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 				Collect.getInstance()
 						.getActivityLogger()
 						.logInstanceAction(this, "recordBarcode", "click",
-								mPrompt.getIndex());
+								getFormEntryPrompt().getIndex());
 				Intent i = new Intent("com.google.zxing.client.android.SCAN");
 				try {
 					Collect.getInstance().getFormController()
-							.setIndexWaitingForData(mPrompt.getIndex());
+							.setIndexWaitingForData(getFormEntryPrompt().getIndex());
 					((Activity) getContext()).startActivityForResult(i,
 							FormEntryActivity.BARCODE_CAPTURE);
 				} catch (ActivityNotFoundException e) {
@@ -84,8 +89,8 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 
 		// set text formatting
 		mStringAnswer = new TextView(getContext());
-		mStringAnswer.setId(QuestionWidget.newUniqueId());
-		mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, mAnswerFontsize);
+		mStringAnswer.setId(ViewIds.generateViewId());
+		mStringAnswer.setTextSize(TypedValue.COMPLEX_UNIT_DIP, getAnswerFontSize());
 		mStringAnswer.setGravity(Gravity.CENTER);
 
 		String s = prompt.getAnswerText();
@@ -106,21 +111,6 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 	public void clearAnswer() {
 		mStringAnswer.setText(null);
 		mGetBarcodeButton.setText(getContext().getString(R.string.get_barcode));
-	}
-
-	@Override
-	public void waitForData() {
-
-	}
-
-	@Override
-	public void cancelWaitingForData() {
-
-	}
-
-	@Override
-	public boolean isWaitingForData() {
-		return false;
 	}
 
 	@Override
@@ -152,7 +142,7 @@ public class BarcodeWidget extends QuestionWidget implements IBinaryWidget {
 
 	@Override
 	public boolean isWaitingForBinaryData() {
-		return mPrompt.getIndex().equals(
+		return getFormEntryPrompt().getIndex().equals(
 				Collect.getInstance().getFormController()
 						.getIndexWaitingForData());
 	}

@@ -1,21 +1,5 @@
 package org.pma2020.collect.android.widgets;
 
-import java.util.Date;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.javarosa.core.model.data.DateData;
-import org.javarosa.core.model.data.IAnswerData;
-import org.javarosa.form.api.FormEntryPrompt;
-import org.joda.time.Chronology;
-import org.joda.time.DateTime;
-import org.joda.time.chrono.EthiopicChronology;
-import org.joda.time.chrono.GregorianChronology;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.pma2020.collect.android.R;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
@@ -28,6 +12,22 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.javarosa.core.model.data.DateData;
+import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.form.api.FormEntryPrompt;
+import org.joda.time.Chronology;
+import org.joda.time.DateTime;
+import org.joda.time.chrono.EthiopicChronology;
+import org.joda.time.chrono.GregorianChronology;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.pma2020.collect.android.R;
+
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Displays a Ethiopian Date Widget.
@@ -257,21 +257,6 @@ public class EthiopianDateWidget extends QuestionWidget{
 			updateGregorianDateHelperDisplay();
 	    }
 
-	@Override
-	public void waitForData() {
-
-	}
-
-	@Override
-	public void cancelWaitingForData() {
-
-	}
-
-	@Override
-	public boolean isWaitingForData() {
-		return false;
-	}
-
 	/**
 	     * Return the date for storing in ODK 
 	     */
@@ -433,17 +418,17 @@ public class EthiopianDateWidget extends QuestionWidget{
 	     */
 	    private void setAnswer() {
 
-	        if (mPrompt.getAnswerValue() != null) {
+	        if (getFormEntryPrompt().getAnswerValue() != null) {
 	        	
 	        	// custom code
-	        	mPrompt.getAnswerText();
+	        	getFormEntryPrompt().getAnswerText();
 	        	      	
 	        	
-	        	System.out.println("mPrompt.getAnswerText() = " + mPrompt.getAnswerText());
+	        	System.out.println("getFormEntryPrompt().getAnswerText() = " + getFormEntryPrompt().getAnswerText());
 	        	
 	            // setup date object
 	        	
-	            DateTime dtISO = new DateTime(((Date) ((DateData) mPrompt.getAnswerValue()).getValue()).getTime());
+	            DateTime dtISO = new DateTime(((Date) ((DateData) getFormEntryPrompt().getAnswerValue()).getValue()).getTime());
 	            
 	            // find out what the same instant is using the Ethiopic Chronology
 	            DateTime dtEthiopic = dtISO.withChronology(chron_eth);
@@ -496,8 +481,7 @@ public class EthiopianDateWidget extends QuestionWidget{
 	    }
 	    
 	    /**
-	     * Update the widget helper date text (useful for those who don't know the Ethiopian calendar)
-	     * @param dtGreg
+	     * Update the widget helper date text (useful for those who don't know the Ethiopian calendar
 	     */
 	    private void updateGregorianDateHelperDisplay(){
 	    	DateTime dtLMDGreg = getCurrentEthiopianDateDisplay().withChronology(GregorianChronology.getInstance());
