@@ -27,7 +27,7 @@ android {
         applicationId("org.odk.collect.android")
         minSdkVersion(16)
         targetSdkVersion(22)
-        versionCode(1059)
+        versionCode(1060)
         versionName("1.4.9a")
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
@@ -137,9 +137,11 @@ dependencies {
     ////    implementation 'net.sf.kxml:kxml2:2.3.0'
 
     //    implementation 'net.sf.opencsv:opencsv:2.3'
-    implementation('org.opendatakit:opendatakit-javarosa:2.7.0') {
-        exclude module: 'joda-time'
-    }
+
+    // --- javarosa will be replaced by a customized jar file inorder to add start and end string labels in the range widget
+//    implementation('org.opendatakit:opendatakit-javarosa:2.7.0') {
+//        exclude module: 'joda-time'
+//    }
 
     //    implementation 'org.osmdroid:osmdroid-android:5.6.4'
 

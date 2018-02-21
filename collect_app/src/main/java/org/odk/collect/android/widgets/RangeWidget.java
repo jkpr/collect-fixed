@@ -53,6 +53,8 @@ public abstract class RangeWidget extends QuestionWidget implements ButtonWidget
     protected BigDecimal rangeEnd;
     protected BigDecimal rangeStep;
     protected BigDecimal actualValue;
+    protected String rangeStartLabel;
+    protected String rangeEndLabel;
 
     protected String[] displayedValuesForNumberPicker;
     protected int elementCount;
@@ -121,14 +123,14 @@ public abstract class RangeWidget extends QuestionWidget implements ButtonWidget
 
     private void setUpLayoutElements() {
         if (!isPickerAppearance) {
+            // to easily display test in small screen
+            rangeStartLabel = rangeStartLabel.trim().replaceAll("\\s+", "\n");
+            rangeEndLabel = rangeEndLabel.trim().replaceAll("\\s+", "\n");
+
             TextView minValue = (TextView) view.findViewById(R.id.min_value);
-            minValue.setText(getResources().getString(R.string.strongly_disagree));
-//            minValue.setText(String.valueOf(rangeStart));
-
+            minValue.setText(rangeStartLabel);
             TextView maxValue = (TextView) view.findViewById(R.id.max_value);
-//            maxValue.setText(String.valueOf(rangeEnd));
-            maxValue.setText(getResources().getString(R.string.strongly_agree));
-
+            maxValue.setText(rangeEndLabel);
             currentValue = (TextView) view.findViewById(R.id.current_value);
         }
 
@@ -175,6 +177,8 @@ public abstract class RangeWidget extends QuestionWidget implements ButtonWidget
         rangeStart = rangeQuestion.getRangeStart();
         rangeEnd = rangeQuestion.getRangeEnd();
         rangeStep = rangeQuestion.getRangeStep().abs();
+        rangeStartLabel = rangeQuestion.getRangeStartLabel();
+        rangeEndLabel = rangeQuestion.getRangeEndLabel();
     }
 
     private void setUpSeekBar() {
