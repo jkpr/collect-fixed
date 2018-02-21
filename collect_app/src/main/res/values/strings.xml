@@ -361,4 +361,6 @@
     <string name="select_value">Select value</string>
     <string name="edit_value">Edit value</string>
     <string name="no_value_selected">No value selected</string>
+    <string name="strongly_disagree">Strongly \nDisagree</string>
+    <string name="strongly_agree">Strongly \nAgree</string>
 </resources>

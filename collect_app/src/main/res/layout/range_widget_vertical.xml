@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -23,11 +24,12 @@ limitations under the License.
 
     <TextView
         android:id="@+id/current_value"
-        android:minWidth="50dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:textSize="25sp" />
+        android:minWidth="50dp"
+        android:textSize="25sp"
+        android:visibility="invisible" />
 
     <FrameLayout
         android:layout_width="50dp"
@@ -38,7 +40,9 @@ limitations under the License.
             android:layout_width="330dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:rotation="270"/>
+            android:rotation="270"
+            android:thumb="@drawable/custom_thumb"
+            android:progressDrawable="@drawable/seekbar_style"/>
 
         <SeekBar
             android:id="@+id/seek_bar"
@@ -46,7 +50,9 @@ limitations under the License.
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:theme="@style/Base.Widget.AppCompat.SeekBar.Discrete"
-            android:rotation="270"/>
+            android:rotation="270"
+            android:thumb="@drawable/custom_thumb"
+            android:progressDrawable="@drawable/seekbar_style"/>
 
     </FrameLayout>
 
@@ -61,14 +67,16 @@ limitations under the License.
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            tools:text="@string/strongly_agree" />
 
         <TextView
             android:id="@+id/min_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            tools:text="@string/strongly_disagree" />
 
     </RelativeLayout>
 </LinearLayout>
