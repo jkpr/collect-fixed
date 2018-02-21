@@ -122,10 +122,12 @@ public abstract class RangeWidget extends QuestionWidget implements ButtonWidget
     private void setUpLayoutElements() {
         if (!isPickerAppearance) {
             TextView minValue = (TextView) view.findViewById(R.id.min_value);
-            minValue.setText(String.valueOf(rangeStart));
+            minValue.setText(getResources().getString(R.string.strongly_disagree));
+//            minValue.setText(String.valueOf(rangeStart));
 
             TextView maxValue = (TextView) view.findViewById(R.id.max_value);
-            maxValue.setText(String.valueOf(rangeEnd));
+//            maxValue.setText(String.valueOf(rangeEnd));
+            maxValue.setText(getResources().getString(R.string.strongly_agree));
 
             currentValue = (TextView) view.findViewById(R.id.current_value);
         }
