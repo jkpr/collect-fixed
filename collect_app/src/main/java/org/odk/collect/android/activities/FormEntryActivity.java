@@ -2524,7 +2524,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		}
 
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLogContract.ON_RESUME);
+		//TODO: fix the null pointer exception
+		if(mUseLog != null)
+			mUseLog.log(UseLogContract.ON_RESUME);
 		// PMA-Logging END
 
 		if (mSaveToDiskTask != null) {
