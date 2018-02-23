@@ -24,13 +24,13 @@ android {
     useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
-        applicationId("org.odk.collect.android")
         minSdkVersion(16)
         targetSdkVersion(22)
-        versionCode(1060)
-        versionName("1.4.9a")
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
+        applicationId("org.pma2020.collect.android")
+        versionCode(1061)
+        versionName("1.4.8e")
     }
 
     buildTypes {
@@ -134,14 +134,13 @@ dependencies {
 
     //    implementation 'commons-io:commons-io:2.5'
 
-    ////    implementation 'net.sf.kxml:kxml2:2.3.0'
+    implementation 'net.sf.kxml:kxml2:2.3.0'
 
     //    implementation 'net.sf.opencsv:opencsv:2.3'
 
-    // --- javarosa will be replaced by a customized jar file inorder to add start and end string labels in the range widget
-//    implementation('org.opendatakit:opendatakit-javarosa:2.7.0') {
-//        exclude module: 'joda-time'
-//    }
+    //implementation('org.opendatakit:opendatakit-javarosa:2.7.0') {
+    //    exclude module: 'joda-time'
+    //}
 
     //    implementation 'org.osmdroid:osmdroid-android:5.6.4'
 
