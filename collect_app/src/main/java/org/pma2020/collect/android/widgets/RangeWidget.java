@@ -179,6 +179,13 @@ public abstract class RangeWidget extends QuestionWidget implements ButtonWidget
         rangeStep = rangeQuestion.getRangeStep().abs();
         rangeStartLabel = rangeQuestion.getRangeStartLabel();
         rangeEndLabel = rangeQuestion.getRangeEndLabel();
+
+        if(rangeStartLabel == null || rangeStartLabel.trim().equals(""))
+            rangeStartLabel = String.valueOf(rangeStart);
+
+        if(rangeEndLabel == null || rangeEndLabel.trim().equals(""))
+            rangeEndLabel = String.valueOf(rangeEnd);
+
     }
 
     private void setUpSeekBar() {
