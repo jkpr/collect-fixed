@@ -6,17 +6,18 @@
                 android:radius="5dp" />
             <gradient
 
-                android:startColor="#6493cec4"
-                android:centerColor="#7d257c6d"
+                android:startColor="#af0f5448"
+                android:centerColor="#6493cec4"
                 android:endColor="#af0f5448"
-                android:centerY="0.2"
+                android:centerY="50%"
                 android:type="linear"
                 />
         </shape>
     </item>
 </layer-list>
 
-    <!-- #337adccb
-    #3347d6bd
-    #3320dcbb
+    <!--
+    android:startColor="#6493cec4"
+    android:centerColor="#7d257c6d"
+    android:endColor="#af0f5448"
     -->
