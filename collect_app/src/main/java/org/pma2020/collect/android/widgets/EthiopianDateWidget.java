@@ -97,7 +97,7 @@ public class EthiopianDateWidget extends QuestionWidget{
      
 	        Resources res = getResources();
 	        // load the months - will automatically get correct strings for current phone locale
-	        monthsArray = res.getStringArray(R.array.amharic_months);
+	        monthsArray = res.getStringArray(R.array.ethiopian_months);
 	        
 	        LayoutInflater vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	        View vv = vi.inflate(R.layout.ethiopian_date_widget, null);

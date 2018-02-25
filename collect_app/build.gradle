@@ -29,13 +29,13 @@ android {
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
         applicationId("org.pma2020.collect.android")
-        versionCode(1060)
+        versionCode(1062)
         versionName("1.4.8e")
     }
 
     buildTypes {
         release {
-            minifyEnabled(true)
+            minifyEnabled(false)
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
         snapshot {
@@ -62,6 +62,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
     buildToolsVersion '26.0.2'
+
+    lintOptions {
+        checkReleaseBuilds false
+        disable 'MissingTranslation'
+    }
 }
 
 configurations.all {
@@ -137,6 +142,7 @@ dependencies {
     implementation 'net.sf.kxml:kxml2:2.3.0'
 
     //    implementation 'net.sf.opencsv:opencsv:2.3'
+
     //implementation('org.opendatakit:opendatakit-javarosa:2.7.0') {
     //    exclude module: 'joda-time'
     //}

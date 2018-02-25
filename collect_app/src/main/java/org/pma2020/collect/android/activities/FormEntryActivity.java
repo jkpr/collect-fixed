@@ -585,7 +585,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 			// save the instance to a temp path...
 			nonblockingCreateSavePointData();
 			// PMA-Logging BEGIN
-			mUseLog.flush(true);
+			//TODO: Temporary solution; fix the null pointer exception
+			if(mUseLog != null)
+				mUseLog.flush(true);
 			// PMA-Logging END
 		}
 		outState.putBoolean(NEWFORM, false);
@@ -627,7 +629,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 				((ODKView) mCurrentView).cancelWaitingForBinaryData();
 			} else {
 				// PMA-Logging BEGIN
-				mUseLog.log(UseLogContract.LEAVE_HIERARCHY);
+				//TODO: Temporary solution; fix the null pointer exception
+				if(mUseLog != null)
+					mUseLog.log(UseLogContract.LEAVE_HIERARCHY);
 				// PMA-Logging END
 			}
 			return;
@@ -808,7 +812,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 			// We may have jumped to a new index in hierarchy activity, so
 			// refresh
 			// PMA-Logging BEGIN
-			mUseLog.log(UseLogContract.LEAVE_HIERARCHY);
+			//TODO: Temporary solution; fix the null pointer exception
+			if(mUseLog != null)
+				mUseLog.log(UseLogContract.LEAVE_HIERARCHY);
 			// PMA-Logging END
 			break;
 
@@ -934,7 +940,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 			int whatToDelete = frm.getWhatToDelete();
 			if (whatToDelete == FormRelationsManager.NO_DELETE) {
 				// PMA-Logging BEGIN
-				mUseLog.log(UseLogContract.SAVE_FORM);
+				//TODO: Temporary solution; fix the null pointer exception
+				if(mUseLog != null)
+					mUseLog.log(UseLogContract.SAVE_FORM);
 				// PMA-Logging END
 				saveDataToDisk(DO_NOT_EXIT, isInstanceComplete(false), null);
 			} else {
@@ -956,7 +964,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 				saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 			}
 			// PMA-Logging BEGIN
-			mUseLog.log(UseLogContract.ENTER_HIERARCHY);
+			//TODO: Temporary solution; fix the null pointer exception
+			if(mUseLog != null)
+				mUseLog.log(UseLogContract.ENTER_HIERARCHY);
 			// PMA-Logging END
 			Intent i = new Intent(this, FormHierarchyActivity.class);
 			startActivityForResult(i, HIERARCHY_ACTIVITY);
@@ -1312,7 +1322,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 										Toast.LENGTH_SHORT).show();
 							} else {
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLogContract.LEAVE_FORM);
+								//TODO: Temporary solution; fix the null pointer exception
+								if(mUseLog != null)
+									mUseLog.log(UseLogContract.LEAVE_FORM);
 								// PMA-Logging END
 
 								// PMA-Linking BEGIN
@@ -1439,18 +1451,24 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
                         return;
                     }
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLogContract.LEAVE_PROMPT);
+					//TODO: Temporary solution; fix the null pointer exception
+					if(mUseLog != null)
+						mUseLog.log(UseLogContract.LEAVE_PROMPT);
 					// PMA-Logging END
 
                     // otherwise, just save without validating (constraints will be validated on finalize)
                 } else
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLogContract.LEAVE_PROMPT);
+					//TODO: Temporary solution; fix the null pointer exception
+					if(mUseLog != null)
+						mUseLog.log(UseLogContract.LEAVE_PROMPT);
 					// PMA-Logging END
                     saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
 				// PMA-Logging BEGIN
             } else if (formController.getEvent() == FormEntryController.EVENT_BEGINNING_OF_FORM) {
-            	mUseLog.log(UseLogContract.LEAVE_PROMPT);
+				//TODO: Temporary solution; fix the null pointer exception
+				if(mUseLog != null)
+            		mUseLog.log(UseLogContract.LEAVE_PROMPT);
 				// PMA-Logging END
 			}
 
@@ -1465,18 +1483,24 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
                     if ((++viewCount) % SAVEPOINT_INTERVAL == 0) {
                         nonblockingCreateSavePointData();
 						// PMA-Logging BEGIN
-						mUseLog.flush(true);
+						//TODO: Temporary solution; fix the null pointer exception
+						if(mUseLog != null)
+							mUseLog.flush(true);
 						// PMA-Logging END
                     }
                     next = createView(event, true);
                     showView(next, AnimationType.RIGHT);
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLogContract.ENTER_PROMPT);
+					//TODO: Temporary solution; fix the null pointer exception
+					if(mUseLog != null)
+						mUseLog.log(UseLogContract.ENTER_PROMPT);
 					// PMA-Logging END
                     break;
                 case FormEntryController.EVENT_END_OF_FORM:
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLogContract.FINISH_FORM);
+					//TODO: Temporary solution; fix the null pointer exception
+					if(mUseLog != null)
+						mUseLog.log(UseLogContract.FINISH_FORM);
 					// PMA-Logging END
                 case FormEntryController.EVENT_REPEAT:
                     next = createView(event, true);
@@ -1529,7 +1553,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 //						formController.getEvent() == FormEntryController.EVENT_REPEAT ||
 //						formController.getEvent() == FormEntryController.EVENT_PROMPT_NEW_REPEAT ||
 						formController.getEvent() == FormEntryController.EVENT_QUESTION) {
-					mUseLog.log(UseLogContract.LEAVE_PROMPT);
+					//TODO: Temporary solution; fix the null pointer exception
+					if(mUseLog != null)
+                		mUseLog.log(UseLogContract.LEAVE_PROMPT);
 				}
 				// PMA-Logging END
 
@@ -1542,14 +1568,18 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
                     if ((++viewCount) % SAVEPOINT_INTERVAL == 0) {
                         nonblockingCreateSavePointData();
 						// PMA-Logging BEGIN
-						mUseLog.flush(true);
+						//TODO: Temporary solution; fix the null pointer exception
+						if(mUseLog != null)
+							mUseLog.flush(true);
 						// PMA-Logging END
                     }
 					// PMA-Logging BEGIN
-					if (event != FormEntryController.EVENT_BEGINNING_OF_FORM) {
+					//TODO: Temporary solution; fix the null pointer exception
+					if (event != FormEntryController.EVENT_BEGINNING_OF_FORM && mUseLog != null) {
 						mUseLog.log(UseLogContract.ENTER_PROMPT);
 					} else {
-						mUseLog.log(UseLogContract.BEGIN_FORM);
+                    	if(mUseLog != null)
+							mUseLog.log(UseLogContract.BEGIN_FORM);
 					}
 					// PMA-Logging END
                 }
@@ -1731,7 +1761,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		}
 
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLogContract.CONTRAVENE_CONSTRAINT, (ODKView) mCurrentView);
+		//TODO: Temporary solution; fix the null pointer exception
+		if(mUseLog != null)
+			mUseLog.log(UseLogContract.CONTRAVENE_CONSTRAINT, (ODKView) mCurrentView);
 		// PMA-Logging END
 		showCustomToast(constraintText, Toast.LENGTH_SHORT);
 	}
@@ -1782,7 +1814,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 					try {
 						formController.newRepeat();
 						// PMA-Logging BEGIN
-						mUseLog.log(UseLogContract.ADD_REPEAT);
+						//TODO: Temporary solution; fix the null pointer exception
+						if(mUseLog != null)
+							mUseLog.log(UseLogContract.ADD_REPEAT);
 						// PMA-Logging END
 					} catch (Exception e) {
 						FormEntryActivity.this.createErrorDialog(
@@ -1934,7 +1968,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 							.logInstanceAction(this,
 									"createDeleteRepeatConfirmDialog", "OK");
 					// PMA-Logging BEGIN
-					mUseLog.log(UseLogContract.REMOVE_REPEAT, (ODKView) mCurrentView);
+					//TODO: Temporary solution; fix the null pointer exception
+					if(mUseLog != null)
+						mUseLog.log(UseLogContract.REMOVE_REPEAT, (ODKView) mCurrentView);
 					// PMA-Logging END
 					formController.deleteRepeat();
 					showPreviousView();
@@ -1997,11 +2033,15 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 							if ( isDeleteRepeat ) {
 								FormRelationsManager.manageRepeatDelete(instanceId, repeatIndex);
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLogContract.REMOVE_REPEAT, (ODKView) mCurrentView);
+								//TODO: Temporary solution; fix the null pointer exception
+								if(mUseLog != null)
+									mUseLog.log(UseLogContract.REMOVE_REPEAT, (ODKView) mCurrentView);
 								// PMA-Logging END
 								formController.deleteRepeat();
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLogContract.SAVE_FORM);
+								//TODO: Temporary solution; fix the null pointer exception
+								if(mUseLog != null)
+									mUseLog.log(UseLogContract.SAVE_FORM);
 								// PMA-Logging END
 								saveDataToDisk(false, false, name);
 								showPreviousView();
@@ -2009,7 +2049,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 								saveDataToDisk(true, false, name);
 							} else {
 								// PMA-Logging BEGIN
-								mUseLog.log(UseLogContract.SAVE_FORM);
+								//TODO: Temporary solution; fix the null pointer exception
+								if(mUseLog != null)
+									mUseLog.log(UseLogContract.SAVE_FORM);
 								// PMA-Logging END
 								saveDataToDisk(exit, complete, name);
 							}
@@ -2050,7 +2092,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 
         synchronized (saveDialogLock) {
 			// PMA-Logging BEGIN
-			mUseLog.makeTempPermanent();
+			//TODO: Temporary solution; fix the null pointer exception
+			if(mUseLog != null)
+				mUseLog.makeTempPermanent();
 			// PMA-Logging END
             mSaveToDiskTask = new SaveToDiskTask(getIntent().getData(), exit, complete,
                     updatedSaveName);
@@ -2133,7 +2177,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 									int whatToDelete = frm.getWhatToDelete();
 									if (whatToDelete == FormRelationsManager.NO_DELETE) {
 										// PMA-Logging BEGIN
-										mUseLog.log(UseLogContract.SAVE_FORM);
+										//TODO: Temporary solution; fix the null pointer exception
+										if(mUseLog != null)
+											mUseLog.log(UseLogContract.SAVE_FORM);
 										// PMA-Logging END
 										saveDataToDisk(EXIT, isInstanceComplete(false), null);
 									} else {
@@ -2491,8 +2537,11 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		}
 
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLogContract.ON_PAUSE);
-		mUseLog.flush(true);
+		//TODO: Temporary solution; fix the null pointer exception
+		if(mUseLog != null) {
+			mUseLog.log(UseLogContract.ON_PAUSE);
+			mUseLog.flush(true);
+		}
 		// PMA-Logging END
 
 		super.onPause();
@@ -2541,7 +2590,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		}
 
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLogContract.ON_RESUME);
+		//TODO: temporary solution; fix the null pointer exception
+		if(mUseLog != null)
+			mUseLog.log(UseLogContract.ON_RESUME);
 		// PMA-Logging END
 
 		if (mSaveToDiskTask != null) {
@@ -2630,8 +2681,11 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 
 		// PMA-LOGGING: BEGIN
 		Log.i(t, "Stopping UseLog thread");
-		mUseLog.close();
-		Log.i(t, "::onDestroy, HandlerThread is alive == " + mUseLog.isAlive());
+		//TODO: temporary solution; fix the null pointer exception
+		if(mUseLog != null) {
+			mUseLog.close();
+			Log.i(t, "::onDestroy, HandlerThread is alive == " + mUseLog.isAlive());
+		}
 		// PMA-LOGGING: END
 	}
 
@@ -2752,7 +2806,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 
 			// PMA-Logging BEGIN
 			// Not certain what needs to happen to get here.
-			mUseLog.log(UseLogContract.UNKNOWN_LOADING_COMPLETE);
+			//TODO: Temporary solution; fix the null pointer exception
+			if(mUseLog != null)
+				mUseLog.log(UseLogContract.UNKNOWN_LOADING_COMPLETE);
 			// PMA-Logging END
 			return;
 		}
@@ -2800,7 +2856,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 				// view
 				Intent i = new Intent(this, FormHierarchyActivity.class);
 				// PMA-Logging: this code runs if there is a save file.
-				mUseLog.log(UseLogContract.ENTER_HIERARCHY);
+				//TODO: Temporary solution; fix the null pointer exception
+				if(mUseLog != null)
+					mUseLog.log(UseLogContract.ENTER_HIERARCHY);
 				startActivityForResult(i, HIERARCHY_ACTIVITY);
 				// PMA-Logging: uncomment to
 				// startActivity(i);
@@ -2810,7 +2868,9 @@ public class FormEntryActivity extends AppCompatActivity implements AnimationLis
 		}
 		refreshCurrentView();
 		// PMA-Logging BEGIN
-		mUseLog.log(UseLogContract.BEGIN_FORM);
+		//TODO: Temporary solution; fix the null pointer exception
+		if(mUseLog != null)
+			mUseLog.log(UseLogContract.BEGIN_FORM);
 		// PMA-Logging END
 	}
 
