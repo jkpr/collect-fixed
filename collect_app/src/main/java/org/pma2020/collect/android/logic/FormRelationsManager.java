@@ -439,8 +439,11 @@ public class FormRelationsManager {
         int deleteWhat = getWhatToDelete();
         if ( deleteWhat == DELETE_THIS ) {
             // PMA-Logging BEGIN
-            mUseLog.log(UseLogContract.RELATION_SELF_DESTRUCT, mInstanceId, null, null);
-            mUseLog.writeBackLogAndClose();
+            //TODO: Temporary solution; fix the null pointer exception
+            if(mUseLog != null) {
+                mUseLog.log(UseLogContract.RELATION_SELF_DESTRUCT, mInstanceId, null, null);
+                mUseLog.writeBackLogAndClose();
+            }
 //            try {
 //                // possible racing? writing for value differences, then writing for deletion
 //                long thisParentId = FormRelationsDb.getParent(mInstanceId);
@@ -1001,7 +1004,9 @@ public class FormRelationsManager {
                 writeDocumentToFile(document, childInstancePath);
 
                 // PMA-Logging BEGIN
-                mUseLog.writeBackLogAndClose();
+                //TODO: Temporary solution; fix the null pointer exception
+                if(mUseLog != null)
+                    mUseLog.writeBackLogAndClose();
                 // PMA-Logging END
 
                 // Set status to incomplete
