@@ -188,7 +188,7 @@ public class FormRelationsManager {
      * @return Returns number of other forms updated, or error code if linking
      * error
      */
-    public static int manageFormRelations(Uri uri, TreeElement instanceRoot) {
+    synchronized public static int manageFormRelations(Uri uri, TreeElement instanceRoot) {
         long instanceId = getIdFromSingleUri(uri);
         int parentCode = manageParentForm(instanceId);
         FormRelationsManager frm = getFormRelationsManager(instanceId, instanceRoot);
